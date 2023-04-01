@@ -115,9 +115,10 @@ def init_feature_configs(parser, configs_json):
     feat_parser.add_argument(
         "--edge_feat_dims", nargs="+", help="edge feature dimension")
     
+    # add some default features
     feat_parser.set_defaults(
-        node_feats=configs_json['node_feat'],
+        node_feats=configs_json['node_feat'] + ['node_degree', 'node_pagerank', 'node_cc'],
         edge_feats=configs_json['edge_feat'],
-        node_feat_dims=configs_json['node_feat_dims'],
+        node_feat_dims=configs_json['node_feat_dims'] + [1, 1, 1],
         edge_feat_dims=configs_json['edge_feat_dims']
     )

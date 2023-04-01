@@ -115,10 +115,10 @@ def train_loop(args):
     print("Moving model to device:", get_device())
     model = model.to(get_device())
 
-    # # create a corpus for train and test
-    # corpus = dataset.Corpus(
-    #     args.dataset, args.n_train, args.n_test,
-    #     train=(not args.test))
+    # create a corpus for train and test
+    corpus = dataset.Corpus(
+        args.dataset, args.n_train, args.n_test,
+        train=(not args.test))
 
     # # create validation points
     # loader = corpus.gen_data_loader(args.batch_size, train=False)

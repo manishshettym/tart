@@ -1,6 +1,8 @@
 {
-    "node_feat": ["node_degree", "node_pagerank", "node_cc"],
-    "node_feat_dims": [1, 1, 1, 1],
-    "edge_feat": ["edge_weight"],
-    "edge_feat_dims": [1]
+    "node_feat": ["nfeat1"],
+    "node_feat_type": ["str"],
+    "node_feat_dims": [768],
+    "edge_feat": ["efeat1"],
+    "edge_feat_type": ["str"],
+    "edge_feat_dims": [768]
 }
