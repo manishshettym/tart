@@ -106,7 +106,7 @@ def train_loop(args):
     in_queue, out_queue = mp.Queue(), mp.Queue()
 
     # init logger
-    # logger = init_logger(args)
+    logger = init_logger(args)
 
     # build model
     model = build_model(models.SubgraphEmbedder, args)
@@ -115,51 +115,51 @@ def train_loop(args):
     print("Moving model to device:", get_device())
     model = model.to(get_device())
 
-    # create a corpus for train and test
-    corpus = dataset.Corpus(
-        args.dataset, args.n_train, args.n_test,
-        train=(not args.test))
+    # # create a corpus for train and test
+    # corpus = dataset.Corpus(
+    #     args.dataset, args.n_train, args.n_test,
+    #     train=(not args.test))
 
-    # create validation points
-    loader = corpus.gen_data_loader(args.batch_size, train=False)
+    # # create validation points
+    # loader = corpus.gen_data_loader(args.batch_size, train=False)
 
-    # ====== TESTING ======
-    if args.test:
-        test(args, model, loader, logger)
+    # # ====== TESTING ======
+    # if args.test:
+    #     test(args, model, loader, logger)
 
-    # ====== TRAINING ======
-    else:
-        validation_pts = make_validation_set(loader)
+    # # ====== TRAINING ======
+    # else:
+    #     validation_pts = make_validation_set(loader)
         
-        for iter in range(args.n_iters):
-            print(f"Iteration #{iter}")
-            workers = start_workers(train, model, corpus, in_queue, out_queue, args)
+    #     for iter in range(args.n_iters):
+    #         print(f"Iteration #{iter}")
+    #         workers = start_workers(train, model, corpus, in_queue, out_queue, args)
 
-            batch_n = 0
-            for epoch in range(args.n_batches // args.eval_interval):
-                print(f"Epoch #{epoch}")
+    #         batch_n = 0
+    #         for epoch in range(args.n_batches // args.eval_interval):
+    #             print(f"Epoch #{epoch}")
 
-                for _ in range(args.eval_interval):
-                    in_queue.put(("step", None))
+    #             for _ in range(args.eval_interval):
+    #                 in_queue.put(("step", None))
                 
-                # loop over mini-batches in an epoch
-                for _ in range(args.eval_interval):
-                    _, result = out_queue.get()
-                    train_loss, train_acc = result
-                    print(f"Batch {batch_n}. Loss: {train_loss:.4f}. \
-                        Train acc: {train_acc:.4f}\n")
+    #             # loop over mini-batches in an epoch
+    #             for _ in range(args.eval_interval):
+    #                 _, result = out_queue.get()
+    #                 train_loss, train_acc = result
+    #                 print(f"Batch {batch_n}. Loss: {train_loss:.4f}. \
+    #                     Train acc: {train_acc:.4f}\n")
                     
-                    logger.add_scalar("Loss(train)", train_loss, batch_n)
-                    logger.add_scalar("Acc(train)", train_acc, batch_n)
-                    batch_n += 1
+    #                 logger.add_scalar("Loss(train)", train_loss, batch_n)
+    #                 logger.add_scalar("Acc(train)", train_acc, batch_n)
+    #                 batch_n += 1
 
-                # validation after an epoch
-                validation(args, model, validation_pts, logger, batch_n, epoch)
+    #             # validation after an epoch
+    #             validation(args, model, validation_pts, logger, batch_n, epoch)
         
-            for _ in range(args.n_workers):
-                in_queue.put(("done", None))
-            for worker in workers:
-                worker.join()
+    #         for _ in range(args.n_workers):
+    #             in_queue.put(("done", None))
+    #         for worker in workers:
+    #             worker.join()
 
 
 def main(testing=False):
