@@ -4,7 +4,7 @@
 # Read the json and populate these args on the fly
 
 
-def init_model_configs(parser, configs_json):
+def build_model_configs(parser):
     # Initialize encoder model configs
     enc_args = parser.add_argument_group()
 
@@ -21,7 +21,8 @@ def init_model_configs(parser, configs_json):
         "--n_batches", type=int, help="Number of training minibatches"
     )
     enc_args.add_argument("--margin", type=float, help="margin for loss")
-    enc_args.add_argument("--dataset", type=str, help="Dataset")
+    enc_args.add_argument("--dataset", type=str, help="Dataset name")
+    enc_args.add_argument("--data_dir", type=str, help="path to the root directory of the train/test sub-directories")
     enc_args.add_argument("--test_set", type=str, help="test set filename")
     enc_args.add_argument(
         "--eval_interval", type=int, help="how often to eval during training"
@@ -40,7 +41,8 @@ def init_model_configs(parser, configs_json):
 
     enc_args.set_defaults(
         agg_type="GINE",
-        dataset="pandas",
+        dataset="example",
+        data_dir="../data/example",
         n_layers=7,
         batch_size=64,
         hidden_dim=64,
@@ -64,7 +66,7 @@ def init_model_configs(parser, configs_json):
     )
 
 
-def init_optimizer_configs(parser, configs_json):
+def build_optimizer_configs(parser):
     opt_parser = parser.add_argument_group()
     opt_parser.add_argument("--opt", dest="opt", type=str, help="Type of optimizer")
     opt_parser.add_argument(
@@ -104,7 +106,7 @@ def init_optimizer_configs(parser, configs_json):
     )
 
 
-def init_feature_configs(parser, configs_json):
+def build_feature_configs(parser):
     feat_parser = parser.add_argument_group()
     feat_parser.add_argument(
         "--node_feat", nargs="+", help="node features to use in training")
@@ -115,10 +117,25 @@ def init_feature_configs(parser, configs_json):
     feat_parser.add_argument(
         "--edge_feat_dims", nargs="+", help="edge feature dimension")
     
-    # add some default features
     feat_parser.set_defaults(
-        node_feats=configs_json['node_feat'] + ['node_degree', 'node_pagerank', 'node_cc'],
-        edge_feats=configs_json['edge_feat'],
-        node_feat_dims=configs_json['node_feat_dims'] + [1, 1, 1],
-        edge_feat_dims=configs_json['edge_feat_dims']
+        node_feat=['node_degree', 'node_pagerank', 'node_cc'],
+        edge_feat=['edge_type'],
+        node_feat_dims=[1, 1, 1],
+        edge_feat_dims=[1]
     )
+
+
+def init_user_configs(args, configs_json):
+    # add user defined features
+    args = vars(args)
+
+    # expected and required features
+    # it will throw key error if not found
+    args['node_feat'] = configs_json['node_feat'] + ['node_degree', 'node_pagerank', 'node_cc']
+    args['edge_feat'] = configs_json['edge_feat']
+    args['node_feat_dims'] = configs_json['node_feat_dims'] + [1, 1, 1]
+    args['edge_feat_dims'] = configs_json['edge_feat_dims']
+
+    # other (assumes non list) features that were provided:
+    for feat in configs_json:
+        args[feat] = configs_json[feat]

@@ -12,6 +12,7 @@ from deepsnap.batch import Batch
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, build_optimizer, get_device
 from tart.utils.train_utils import init_logger, start_workers, make_validation_set
+from tart.utils.config_utils import get_feat_encoder
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -96,7 +97,7 @@ def train(args, model, corpus, in_queue, out_queue):
             out_queue.put(("step", (train_loss, train_acc)))
 
 
-def train_loop(args):
+def train_loop(args, feat_encoder):
     if not os.path.exists(os.path.dirname(args.model_path)):
         os.makedirs(os.path.dirname(args.model_path))
     if not os.path.exists("plots/"):
@@ -116,14 +117,12 @@ def train_loop(args):
     model = model.to(get_device())
 
     # create a corpus for train and test
-    corpus = dataset.Corpus(
-        args.dataset, args.n_train, args.n_test,
-        train=(not args.test))
+    corpus = dataset.Corpus(args, feat_encoder, train=(not args.test))
 
-    # # create validation points
-    # loader = corpus.gen_data_loader(args.batch_size, train=False)
+    # create validation points
+    loader = corpus.gen_data_loader(args.batch_size, train=False)
 
-    # # ====== TESTING ======
+    # ====== TESTING ======
     # if args.test:
     #     test(args, model, loader, logger)
 
@@ -171,12 +170,18 @@ def main(testing=False):
     with open(parser.parse_args().config) as f:
         config_json = json.load(f)
 
-    # initialize configs
-    config.init_optimizer_configs(parser, config_json)
-    config.init_model_configs(parser, config_json)
-    config.init_feature_configs(parser, config_json)
+    # build configs and their defaults
+    config.build_optimizer_configs(parser)
+    config.build_model_configs(parser)
+    config.build_feature_configs(parser)
 
     args = parser.parse_args()
+
+    # set user defined configs
+    config.init_user_configs(args, config_json)
+
+    # identify user defined feature encoder
+    feat_encoder = get_feat_encoder(config_json)
 
     if testing:
         args.test = True
@@ -184,7 +189,7 @@ def main(testing=False):
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 
-    train_loop(args)
+    train_loop(args, feat_encoder)
 
 
 if __name__ == "__main__":

@@ -1,20 +1,18 @@
 import torch
 from transformers import RobertaTokenizer, RobertaModel
-from tart.utils.train_utils import get_device
-
 
 # EXAMPLE
 codebert_name = "microsoft/codebert-base"
 CodeBertTokenizer = RobertaTokenizer.from_pretrained(codebert_name)
-CodeBertModel = RobertaModel.from_pretrained(codebert_name).to(get_device())
+CodeBertModel = RobertaModel.from_pretrained(codebert_name).to(torch.device("cuda"))
 CodeBertModel.eval()
 
 
-def my_encoder(x: str) -> torch.tensor:
+def feat_encoder(x: str) -> torch.tensor:
     tokens_ids = CodeBertTokenizer.encode(
         x, truncation=True)
     
-    tokens_tensor = torch.tensor(tokens_ids, device=get_device())
+    tokens_tensor = torch.tensor(tokens_ids, device=torch.device("cuda"))
     
     with torch.no_grad():
         context_embeddings = CodeBertModel(
