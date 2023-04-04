@@ -7,4 +7,5 @@ networkx
 matplotlib
 openpyxl
 pycodestyle
+rich
 tensorboard

@@ -1,17 +1,6 @@
-from importlib import import_module
-import importlib.util
 
 
-def get_feat_encoder(config_json):
-    assert "feat_encoder" in config_json, "feat_encoder not found in config"
-
-    spec = importlib.util.spec_from_file_location(
-        "user_funcs", config_json["feat_encoder"]
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    user_feat_encoder = module.feat_encoder
-
+def validate_feat_encoder(user_feat_encoder, config_json):
     # check if the function takes a string and returns a torch.tensor using a sample input
     assert (
         user_feat_encoder.__code__.co_argcount == 1
