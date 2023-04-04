@@ -1,3 +1,6 @@
+import os
+import json
+import argparse
 from tqdm import tqdm
 from datetime import datetime
 
@@ -6,8 +9,15 @@ from sklearn.metrics import roc_auc_score, confusion_matrix
 from sklearn.metrics import average_precision_score
 from deepsnap.batch import Batch
 
-
+from tart.representation import config
 from tart.utils.model_utils import get_device
+from tart.utils.config_utils import validate_feat_encoder
+
+from tart.representation import config, models, dataset
+from tart.utils.model_utils import build_model, get_device
+from tart.utils.train_utils import init_logger
+from tart.utils.config_utils import validate_feat_encoder
+from tart.utils.tart_utils import summarize_tart_run
 
 
 def precision(pred, labels):
@@ -25,7 +35,7 @@ def recall(pred, labels):
 
 
 # TODO: this API should have similar interface as tart_train
-def tart_test(model, dataloader):
+def test(model, dataloader):
     model.eval()
     all_raw_preds, all_preds, all_labels = [], [], []
     
@@ -176,3 +186,50 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         logger.add_scalar("FN/test", fn, batch_n)
         print("Saving {}".format(args.model_path))
         torch.save(model.state_dict(), args.model_path)
+
+
+def tart_test(user_config_file, feat_encoder):
+    parser = argparse.ArgumentParser()
+
+    # reading user config from json file
+    with open(user_config_file) as f:
+        config_json = json.load(f)
+
+    # build configs and their defaults
+    config.build_optimizer_configs(parser)
+    config.build_model_configs(parser)
+    config.build_feature_configs(parser)
+
+    args = parser.parse_args()
+
+    # set user defined configs
+    config.init_user_configs(args, config_json)
+
+    # validate user defined feature encoder
+    feat_encoder = validate_feat_encoder(feat_encoder, config_json)
+    
+    args.n_train = args.n_batches * args.batch_size
+    args.n_test = int(0.2 * args.n_train)
+
+    if not os.path.exists(os.path.dirname(args.model_path)):
+        os.makedirs(os.path.dirname(args.model_path))
+    if not os.path.exists("plots/"):
+        os.makedirs("plots/")
+
+    # build model
+    model = build_model(models.SubgraphEmbedder, args)
+    model.share_memory()
+
+    # print("Moving model to device:", get_device())
+    model = model.to(get_device())
+
+    # create a corpus for train and test
+    corpus = dataset.Corpus(args, feat_encoder, train=(not args.test))
+
+    # create validation points
+    loader = corpus.gen_data_loader(args.batch_size, train=False)
+
+    summarize_tart_run(args)
+    
+    # ====== TESTING ======
+    test(model, loader)

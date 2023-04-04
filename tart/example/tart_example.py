@@ -2,6 +2,7 @@ import torch
 from transformers import RobertaTokenizer, RobertaModel
 
 from tart.representation.train import tart_train
+from tart.representation.test import tart_test
 
 my_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -33,4 +34,7 @@ if __name__ == "__main__":
     config_file = "tart-config.json"
 
     # call train API
-    tart_train(config_file, feat_encoder)
+    # tart_train(config_file, feat_encoder)
+
+    # call test API
+    tart_test(config_file, feat_encoder)

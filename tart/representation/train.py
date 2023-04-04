@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 
-from tart.representation.test import validation, tart_test
+from tart.representation.test import validation, test
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, build_optimizer, get_device
 from tart.utils.train_utils import init_logger, start_workers, make_validation_set
@@ -124,46 +124,41 @@ def train_loop(args, feat_encoder):
 
     summarize_tart_run(args)
 
-    # ====== TESTING ======
-    if args.test:
-        tart_test(model, loader)
-
     # ====== TRAINING ======
-    else:
-        validation_pts = make_validation_set(loader)
-        
-        # for iter in range(args.n_iters):
-        #     print(f"Iteration #{iter}")
-        #     workers = start_workers(train, model, corpus, in_queue, out_queue, args)
+    validation_pts = make_validation_set(loader)
+    
+    for iter in range(args.n_iters):
+        print(f"Iteration #{iter}")
+        workers = start_workers(train, model, corpus, in_queue, out_queue, args)
 
-        #     batch_n = 0
-        #     for epoch in range(args.n_batches // args.eval_interval):
-        #         print(f"Epoch #{epoch}")
+        batch_n = 0
+        for epoch in range(args.n_batches // args.eval_interval):
+            print(f"Epoch #{epoch}")
 
-        #         for _ in range(args.eval_interval):
-        #             in_queue.put(("step", None))
+            for _ in range(args.eval_interval):
+                in_queue.put(("step", None))
+            
+            # loop over mini-batches in an epoch
+            for _ in range(args.eval_interval):
+                _, result = out_queue.get()
+                train_loss, train_acc = result
+                print(f"Batch {batch_n}. Loss: {train_loss:.4f}. \
+                    Train acc: {train_acc:.4f}\n")
                 
-        #         # loop over mini-batches in an epoch
-        #         for _ in range(args.eval_interval):
-        #             _, result = out_queue.get()
-        #             train_loss, train_acc = result
-        #             print(f"Batch {batch_n}. Loss: {train_loss:.4f}. \
-        #                 Train acc: {train_acc:.4f}\n")
-                    
-        #             logger.add_scalar("Loss(train)", train_loss, batch_n)
-        #             logger.add_scalar("Acc(train)", train_acc, batch_n)
-        #             batch_n += 1
+                logger.add_scalar("Loss(train)", train_loss, batch_n)
+                logger.add_scalar("Acc(train)", train_acc, batch_n)
+                batch_n += 1
 
-        #         # validation after an epoch
-        #         validation(args, model, validation_pts, logger, batch_n, epoch)
-        
-        #     for _ in range(args.n_workers):
-        #         in_queue.put(("done", None))
-        #     for worker in workers:
-        #         worker.join()
+            # validation after an epoch
+            validation(args, model, validation_pts, logger, batch_n, epoch)
+    
+        for _ in range(args.n_workers):
+            in_queue.put(("done", None))
+        for worker in workers:
+            worker.join()
 
 
-def tart_train(user_config_file, feat_encoder, testing=False):
+def tart_train(user_config_file, feat_encoder):
     print_header()
     parser = argparse.ArgumentParser()
 
@@ -183,9 +178,6 @@ def tart_train(user_config_file, feat_encoder, testing=False):
 
     # validate user defined feature encoder
     feat_encoder = validate_feat_encoder(feat_encoder, config_json)
-
-    if testing:
-        args.test = True
     
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
