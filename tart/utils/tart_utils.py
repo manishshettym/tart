@@ -15,6 +15,7 @@ def print_header():
 
 def summarize_tart_run(args):
     tart = '\[tart]'
+    console.print(f"[bright_green] {tart} [/bright_green] mode {'test' if args.test else 'train'}")
     console.print(f"[bright_green] {tart} [/bright_green] dataset {args.dataset}")
     console.print(f"[bright_green] {tart} [/bright_green] n_iters {args.n_iters}")
     console.print(f"[bright_green] {tart} [/bright_green] n_batches {args.n_batches}")

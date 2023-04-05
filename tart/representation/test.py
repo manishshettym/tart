@@ -202,8 +202,11 @@ def tart_test(user_config_file, feat_encoder):
 
     args = parser.parse_args()
 
+    # set to test mode
+    args.test = True
+
     # set user defined configs
-    config.init_user_configs(args, config_json)
+    args = config.init_user_configs(args, config_json)
 
     # validate user defined feature encoder
     feat_encoder = validate_feat_encoder(feat_encoder, config_json)
@@ -224,10 +227,10 @@ def tart_test(user_config_file, feat_encoder):
     model = model.to(get_device())
 
     # create a corpus for train and test
-    corpus = dataset.Corpus(args, feat_encoder, train=(not args.test))
+    corpus = dataset.Corpus(args, feat_encoder, train=False)
 
     # create validation points
-    loader = corpus.gen_data_loader(args.batch_size, train=False)
+    loader = corpus.gen_data_loader(args.batch_size, train=(not args.test))
 
     summarize_tart_run(args)
     

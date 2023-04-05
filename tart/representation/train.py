@@ -174,7 +174,7 @@ def tart_train(user_config_file, feat_encoder):
     args = parser.parse_args()
 
     # set user defined configs
-    config.init_user_configs(args, config_json)
+    args = config.init_user_configs(args, config_json)
 
     # validate user defined feature encoder
     feat_encoder = validate_feat_encoder(feat_encoder, config_json)
