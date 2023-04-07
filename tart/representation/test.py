@@ -3,6 +3,7 @@ import json
 import argparse
 from tqdm import tqdm
 from datetime import datetime
+from rich.console import Console
 
 import torch
 from sklearn.metrics import roc_auc_score, confusion_matrix
@@ -18,6 +19,8 @@ from tart.utils.model_utils import build_model, get_device
 from tart.utils.train_utils import init_logger
 from tart.utils.config_utils import validate_feat_encoder
 from tart.utils.tart_utils import summarize_tart_run
+
+console = Console()
 
 
 def precision(pred, labels):
@@ -99,8 +102,8 @@ def test(model, dataloader):
     avg_prec = average_precision_score(labels, pred)
     tn, fp, fn, tp = confusion_matrix(labels, pred).ravel()
 
-    print("\n{}".format(str(datetime.now())))
-    print(
+    console.print("\n{}".format(str(datetime.now())))
+    console.print(
         "Test. Count: {}. Acc: {:.4f}. "
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n     "
         "TN: {}. FP: {}. FN: {}. TP: {}".format(
@@ -166,8 +169,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
     avg_prec = average_precision_score(labels, pred)
     tn, fp, fn, tp = confusion_matrix(labels, pred).ravel()
 
-    print("\n{}".format(str(datetime.now())))
-    print(
+    console.print(
         "Validation. Epoch {}. Count: {}. Acc: {:.4f}.\n"
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n"
         "TN: {}. FP: {}. FN: {}. TP: {}".format(
@@ -184,7 +186,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         logger.add_scalar("TN/test", tn, batch_n)
         logger.add_scalar("FP/test", fp, batch_n)
         logger.add_scalar("FN/test", fn, batch_n)
-        print("Saving {}".format(args.model_path))
+        console.print("\n[italic]Saving {}[/ italic]\n".format(args.model_path))
         torch.save(model.state_dict(), args.model_path)
 
 

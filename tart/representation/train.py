@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+from rich.console import Console
 
 import torch
 import torch.nn as nn
@@ -16,6 +17,7 @@ from tart.utils.config_utils import validate_feat_encoder
 from tart.utils.tart_utils import print_header, summarize_tart_run
 
 torch.multiprocessing.set_sharing_strategy('file_system')
+console = Console()
 
 
 def train(args, model, corpus, in_queue, out_queue):
@@ -131,12 +133,12 @@ def train_loop(args, feat_encoder):
     assert args.n_batches // args.eval_interval > 0, "Number of epochs per iteration must be greater than 0"
     
     for iter in range(args.n_iters):
-        print(f"Iteration #{iter}")
+        console.print(f"\n[bright_green underline]Iteration #{iter}[/bright_green underline]\n")
         workers = start_workers(train, model, corpus, in_queue, out_queue, args)
 
         batch_n = 0
         for epoch in range(args.n_batches // args.eval_interval):
-            print(f"Epoch #{epoch}")
+            console.print(f"\n[bright_blue]=============== Epoch #{epoch} ===============[/ bright_blue]")
 
             for _ in range(args.eval_interval):
                 in_queue.put(("step", None))
@@ -145,8 +147,7 @@ def train_loop(args, feat_encoder):
             for _ in range(args.eval_interval):
                 _, result = out_queue.get()
                 train_loss, train_acc = result
-                print(f"Batch {batch_n}. Loss: {train_loss:.4f}. \
-                    Train acc: {train_acc:.4f}\n")
+                console.print(f"Batch {batch_n}. Loss: {train_loss:.4f}. Train acc: {train_acc:.4f}\n")
                 
                 logger.add_scalar("Loss(train)", train_loss, batch_n)
                 logger.add_scalar("Acc(train)", train_acc, batch_n)
