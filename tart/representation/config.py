@@ -22,7 +22,11 @@ def build_model_configs(parser):
     )
     enc_args.add_argument("--margin", type=float, help="margin for loss")
     enc_args.add_argument("--dataset", type=str, help="Dataset name")
-    enc_args.add_argument("--data_dir", type=str, help="path to the root directory of the train/test sub-directories")
+    enc_args.add_argument(
+        "--data_dir",
+        type=str,
+        help="path to the root directory of the train/test sub-directories",
+    )
     enc_args.add_argument("--test_set", type=str, help="test set filename")
     enc_args.add_argument(
         "--eval_interval", type=int, help="how often to eval during training"
@@ -109,36 +113,56 @@ def build_optimizer_configs(parser):
 def build_feature_configs(parser):
     feat_parser = parser.add_argument_group()
     feat_parser.add_argument(
-        "--node_feat", nargs="+", help="node features to use in training")
+        "--node_feats", nargs="+", help="node features to use in training"
+    )
     feat_parser.add_argument(
-        "--edge_feat", nargs="+", help="edge features to use in training")
+        "--edge_feats", nargs="+", help="edge features to use in training"
+    )
     feat_parser.add_argument(
-        "--node_feat_dims", nargs="+", help="node feature dimension")
+        "--node_feat_dims", nargs="+", help="node feature dimension"
+    )
     feat_parser.add_argument(
-        "--edge_feat_dims", nargs="+", help="edge feature dimension")
-    
-    feat_parser.set_defaults(
-        node_feat=['node_degree', 'node_pagerank', 'node_cc'],
-        edge_feat=['edge_type'],
-        node_feat_dims=[1, 1, 1],
-        edge_feat_dims=[1]
+        "--edge_feat_dims", nargs="+", help="edge feature dimension"
     )
 
 
 def init_user_configs(args, configs_json):
-    # expected and required features
-    # it will throw key error if not found
-    args.node_feat = ['node_data'] + ['node_degree', 'node_pagerank', 'node_cc']
-    args.edge_feat = ['edge_data']
 
-    args.node_feat_dims = [configs_json['node_feat_dim']] + [1, 1, 1]
-    args.edge_feat_dims = [configs_json['edge_feat_dim']]
+    # check if node_feats and edge_feats are provided
+    if "node_feats" not in configs_json:
+        raise ValueError("node_feats not provided in configs.json")
+    if "edge_feats" not in configs_json:
+        raise ValueError("edge_feats not provided in configs.json")
 
-    args.node_feat_type = ['str'] + ['int', 'int', 'int']
-    args.edge_feat_type = ['str']
+    # check if there is an overlap between node_feats and edge_feats
+    feat_overlap = set(configs_json["node_feats"]) & set(configs_json["edge_feats"])
+    if len(feat_overlap) > 0:
+        raise ValueError("node and edge feats overlap on features: {}! Please rename them. ".format(feat_overlap))
+
+    args.node_feats = configs_json["node_feats"] + [
+        "node_degree",
+        "node_pagerank",
+        "node_cc",
+    ]
+    args.edge_feats = configs_json["edge_feats"]
+
+    args.node_feat_dims = configs_json["node_feat_dims"] + [1, 1, 1]
+    args.edge_feat_dims = configs_json["edge_feat_dims"]
+
+    args.node_feat_types = configs_json["node_feat_types"] + ["int", "int", "int"]
+    args.edge_feat_types = configs_json["edge_feat_types"]
 
     # other (assumes non list) features that were provided:
-    for feat in set(configs_json) - set(['node_feat_dim', 'edge_feat_dim']):
+    for feat in set(configs_json) - set(
+        [
+            "node_feats",
+            "edge_feats",
+            "node_feat_dims",
+            "edge_feat_dims",
+            "node_feat_types",
+            "edge_feat_types",
+        ]
+    ):
         setattr(args, feat, configs_json[feat])
-    
+
     return args

@@ -112,7 +112,7 @@ def train_loop(args, feat_encoder):
     # build model
     model = build_model(models.SubgraphEmbedder, args)
     model.share_memory()
-    
+
     # print("Moving model to device:", get_device())
     model = model.to(get_device())
 

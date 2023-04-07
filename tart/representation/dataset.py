@@ -144,7 +144,7 @@ class GraphDataset(Dataset):
 
         # Preprocess each graph networkx json file to .pt file
         for raw_path in track(self.raw_paths, description="Processing graphs"):
-            data = read_graph_from_json(raw_path)
+            data = read_graph_from_json(self.args, raw_path)
 
             if data is None:
                 continue

@@ -14,9 +14,9 @@ class Preprocess(nn.Module):
     def __init__(self, dim_in, args):
         super(Preprocess, self).__init__()
         self.dim_in = dim_in
-        self.node_feat = args.node_feat
+        self.node_feat = args.node_feats
         self.node_feat_dims = args.node_feat_dims
-        self.edge_feat = args.edge_feat
+        self.edge_feat = args.edge_feats
         self.edge_feat_dim = args.edge_feat_dims
 
     @property
@@ -29,7 +29,11 @@ class Preprocess(nn.Module):
 
         for key in self.node_feat:
             tensor_key = key + "_t"
-            if key == "node_data":
+            
+            if batch[tensor_key] is None:
+                raise Exception("Node feature {} is None".format(key))
+
+            if len(batch[tensor_key].shape) == 3:
                 # reshape [batch_size, 1, n] to [batch_size, n]
                 node_feat_list.append(batch[tensor_key].squeeze(1))
             else:
@@ -37,8 +41,15 @@ class Preprocess(nn.Module):
 
         for key in self.edge_feat:
             tensor_key = key + "_t"
-            # reshape [batch_size, 1, n] to [batch_size, n]
-            edge_feat_list.append(batch[tensor_key].squeeze(1))
+
+            if batch[tensor_key] is None:
+                raise Exception("Edge feature {} is None".format(key))
+            
+            if len(batch[tensor_key].shape) == 3:
+                # reshape [batch_size, 1, n] to [batch_size, n]
+                edge_feat_list.append(batch[tensor_key].squeeze(1))
+            else:
+                edge_feat_list.append(batch[tensor_key])
 
         batch.node_feature = torch.cat(node_feat_list, dim=-1).type(torch.FloatTensor)
         batch.edge_feature = torch.cat(edge_feat_list, dim=-1).type(torch.FloatTensor)
@@ -146,10 +157,10 @@ class BasicGNN(nn.Module):
         self.skip = args.skip
         self.agg_type = args.agg_type
 
-        self.node_feat = args.node_feat
+        self.node_feats = args.node_feats
         self.node_feat_dims = args.node_feat_dims
-        self.edge_feat = args.edge_feat
-        self.edge_feat_dim = args.edge_feat_dims
+        self.edge_feats = args.edge_feats
+        self.edge_feat_dims = args.edge_feat_dims
 
         # add a preprocessor
         self.feat_preprocess = Preprocess(input_dim, args)
@@ -205,7 +216,7 @@ class BasicGNN(nn.Module):
         elif type == "GINE":
             return lambda i, h: pyg_nn.GINEConv(
                 nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h)),
-                edge_dim=sum(self.edge_feat_dim)
+                edge_dim=sum(self.edge_feat_dims)
             )
 
         else:
