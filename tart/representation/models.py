@@ -15,27 +15,30 @@ class Preprocess(nn.Module):
         super(Preprocess, self).__init__()
         self.dim_in = dim_in
         self.node_feat = args.node_feat
-        self.node_feat_dim = args.node_feat_dims
+        self.node_feat_dims = args.node_feat_dims
         self.edge_feat = args.edge_feat
         self.edge_feat_dim = args.edge_feat_dims
 
     @property
     def dim_out(self):
-        return self.dim_in + sum([aug_dim for aug_dim in self.node_feat_dim])
+        return self.dim_in + sum([aug_dim for aug_dim in self.node_feat_dims])
 
     def forward(self, batch):
         node_feat_list = [batch.node_feature]
         edge_feat_list = []
 
         for key in self.node_feat:
-            if key == "node_span":
+            tensor_key = key + "_t"
+            if key == "node_data":
                 # reshape [batch_size, 1, n] to [batch_size, n]
-                node_feat_list.append(batch[key].squeeze(1))
+                node_feat_list.append(batch[tensor_key].squeeze(1))
             else:
-                node_feat_list.append(batch[key])
+                node_feat_list.append(batch[tensor_key])
 
         for key in self.edge_feat:
-            edge_feat_list.append(batch[key])
+            tensor_key = key + "_t"
+            # reshape [batch_size, 1, n] to [batch_size, n]
+            edge_feat_list.append(batch[tensor_key].squeeze(1))
 
         batch.node_feature = torch.cat(node_feat_list, dim=-1).type(torch.FloatTensor)
         batch.edge_feature = torch.cat(edge_feat_list, dim=-1).type(torch.FloatTensor)
@@ -144,7 +147,7 @@ class BasicGNN(nn.Module):
         self.agg_type = args.agg_type
 
         self.node_feat = args.node_feat
-        self.node_feat_dim = args.node_feat_dims
+        self.node_feat_dims = args.node_feat_dims
         self.edge_feat = args.edge_feat
         self.edge_feat_dim = args.edge_feat_dims
 
@@ -201,14 +204,14 @@ class BasicGNN(nn.Module):
         # graph isomorphism net + edge features
         elif type == "GINE":
             return lambda i, h: pyg_nn.GINEConv(
-                nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h)), edge_dim=1
+                nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h)),
+                edge_dim=sum(self.edge_feat_dim)
             )
 
         else:
             print("unrecognized model type")
 
     def forward(self, data):
-
         # preprocess (if reqd)
         if self.feat_preprocess is not None:
             if not hasattr(data, "preprocessed"):
@@ -216,7 +219,7 @@ class BasicGNN(nn.Module):
                 data.preprocessed = True
 
         x = data.node_feature
-        assert x.shape[1] == sum(self.node_feat_dim) + 1
+        assert x.shape[1] == sum(self.node_feat_dims) + 1, "node feature dim mismatch"
 
         edge_index, edge_attr = data.edge_index, data.edge_feature
         batch = data.batch

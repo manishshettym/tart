@@ -14,10 +14,12 @@ def read_graph_from_json(path: str) -> nx.Graph:
     else:
         G = nx.Graph()
     
-    for node in data['nodes']:
-        G.add_node(node['id'], **node['data'])
+    for id, node in enumerate(data['nodes']):
+        # node is a string of features
+        G.add_node(id, node_data=node)
+    
     for edge in data['edges']:
-        G.add_edge(edge['source'], edge['target'], **edge['data'])
+        G.add_edge(edge[0], edge[2], edge_data=edge[1])
 
     return G
 
@@ -44,14 +46,14 @@ def featurize_graph(args, feat_encoder, g: nx.DiGraph, anchor=None) -> DSGraph:
         if anchor is not None:
             g.nodes[v]["node_feature"] = torch.tensor([float(v == anchor)])
 
-        for f, t in zip(args.node_feat, args.node_feat_type):
-            
+        for f, t in zip(args.node_feat, args.node_feat_type):            
             # previously featurized this node
             if f + '_t' in g.nodes[v]:
                 continue
 
             if t == 'str':
                 g.nodes[v][f + "_t"] = feat_encoder(g.nodes[v][f])
+                g.nodes[v].pop(f)  # remove the original feature
             elif f == "node_degree":
                 g.nodes[v][f + "_t"] = torch.tensor([g.degree(v)])
             elif f == "node_pagerank":
@@ -59,10 +61,7 @@ def featurize_graph(args, feat_encoder, g: nx.DiGraph, anchor=None) -> DSGraph:
             elif f == "node_cc":
                 g.nodes[v][f + "_t"] = torch.tensor([clustering_coeff[v]])
             else:
-                g.nodes[v][f + "_t"] = torch.tensor([g.nodes[v][f]])
-            
-            # remove the original feature
-            g.nodes[v].pop(f)
+                raise ValueError(f"Unknown node feature {f} of type: {t}")
 
     for e in g.edges:
         for f, t in zip(args.edge_feat, args.edge_feat_type):

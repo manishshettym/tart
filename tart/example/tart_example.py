@@ -34,7 +34,18 @@ if __name__ == "__main__":
     config_file = "tart-config.json"
 
     # call train API
-    # tart_train(config_file, feat_encoder)
+    tart_train(config_file, feat_encoder)
 
     # call test API
-    tart_test(config_file, feat_encoder)
+    # tart_test(config_file, feat_encoder)
+
+
+# JSON structure for graph
+# GREAT paper from vincent hellendoorn
+# 1. nodes = List of strings (node_string)
+# 2. edges = List[(n1, edge_string, n2)]
+# 3. metadata about the graph
+
+# Give 2 options for text encoders
+# BPE and CodeBERT
+# custom is also possible.

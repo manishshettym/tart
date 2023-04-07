@@ -128,13 +128,17 @@ def build_feature_configs(parser):
 def init_user_configs(args, configs_json):
     # expected and required features
     # it will throw key error if not found
-    args.node_feat = configs_json['node_feat'] + ['node_degree', 'node_pagerank', 'node_cc']
-    args.edge_feat = configs_json['edge_feat']
-    args.node_feat_dims = configs_json['node_feat_dims'] + [1, 1, 1]
-    args.edge_feat_dims = configs_json['edge_feat_dims']
+    args.node_feat = ['node_data'] + ['node_degree', 'node_pagerank', 'node_cc']
+    args.edge_feat = ['edge_data']
+
+    args.node_feat_dims = [configs_json['node_feat_dim']] + [1, 1, 1]
+    args.edge_feat_dims = [configs_json['edge_feat_dim']]
+
+    args.node_feat_type = ['str'] + ['int', 'int', 'int']
+    args.edge_feat_type = ['str']
 
     # other (assumes non list) features that were provided:
-    for feat in set(configs_json) - set(['node_feat', 'edge_feat', 'node_feat_dims', 'edge_feat_dims']):
+    for feat in set(configs_json) - set(['node_feat_dim', 'edge_feat_dim']):
         setattr(args, feat, configs_json[feat])
     
     return args

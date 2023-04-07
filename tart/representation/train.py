@@ -112,7 +112,7 @@ def train_loop(args, feat_encoder):
     # build model
     model = build_model(models.SubgraphEmbedder, args)
     model.share_memory()
-
+    
     # print("Moving model to device:", get_device())
     model = model.to(get_device())
 
@@ -126,6 +126,9 @@ def train_loop(args, feat_encoder):
 
     # ====== TRAINING ======
     validation_pts = make_validation_set(loader)
+
+    assert args.n_iters > 0, "Number of iterations must be greater than 0"
+    assert args.n_batches // args.eval_interval > 0, "Number of epochs per iteration must be greater than 0"
     
     for iter in range(args.n_iters):
         print(f"Iteration #{iter}")

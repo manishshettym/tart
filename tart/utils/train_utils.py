@@ -1,4 +1,4 @@
-from tqdm import tqdm
+from rich.progress import track, Progress, TextColumn, SpinnerColumn
 
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
@@ -16,13 +16,20 @@ def init_logger(args):
 
 def start_workers(train_func, model, corpus, in_queue, out_queue, args):
     workers = []
-    for _ in tqdm(range(args.n_workers), desc="Workers"):
-        worker = mp.Process(
-            target=train_func,
-            args=(args, model, corpus, in_queue, out_queue)
-        )
-        worker.start()
-        workers.append(worker)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("Starting workers..{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task("", total=None)
+
+        for _ in range(args.n_workers):
+            worker = mp.Process(
+                target=train_func,
+                args=(args, model, corpus, in_queue, out_queue)
+            )
+            worker.start()
+            workers.append(worker)
     
     return workers
 
@@ -30,7 +37,7 @@ def start_workers(train_func, model, corpus, in_queue, out_queue, args):
 def make_validation_set(dataloader):
     test_pts = []
 
-    for batch in tqdm(dataloader, total=len(dataloader), desc="TestBatches"):
+    for batch in track(dataloader, total=len(dataloader), description="TestBatches"):
         pos_q, pos_t, neg_q, neg_t = zip(*batch)
         pos_q = Batch.from_data_list(pos_q)
         pos_t = Batch.from_data_list(pos_t)
