@@ -137,7 +137,11 @@ def init_user_configs(args, configs_json):
     # check if there is an overlap between node_feats and edge_feats
     feat_overlap = set(configs_json["node_feats"]) & set(configs_json["edge_feats"])
     if len(feat_overlap) > 0:
-        raise ValueError("node and edge feats overlap on features: {}! Please rename them. ".format(feat_overlap))
+        raise ValueError(
+            "node and edge feats overlap on features: {}! Please rename them. ".format(
+                feat_overlap
+            )
+        )
 
     args.node_feats = configs_json["node_feats"] + [
         "node_degree",

@@ -29,7 +29,7 @@ class Preprocess(nn.Module):
 
         for key in self.node_feat:
             tensor_key = key + "_t"
-            
+
             if batch[tensor_key] is None:
                 raise Exception("Node feature {} is None".format(key))
 
@@ -44,7 +44,7 @@ class Preprocess(nn.Module):
 
             if batch[tensor_key] is None:
                 raise Exception("Edge feature {} is None".format(key))
-            
+
             if len(batch[tensor_key].shape) == 3:
                 # reshape [batch_size, 1, n] to [batch_size, n]
                 edge_feat_list.append(batch[tensor_key].squeeze(1))
@@ -216,7 +216,7 @@ class BasicGNN(nn.Module):
         elif type == "GINE":
             return lambda i, h: pyg_nn.GINEConv(
                 nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h)),
-                edge_dim=sum(self.edge_feat_dims)
+                edge_dim=sum(self.edge_feat_dims),
             )
 
         else:

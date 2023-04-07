@@ -41,7 +41,7 @@ def recall(pred, labels):
 def test(model, dataloader):
     model.eval()
     all_raw_preds, all_preds, all_labels = [], [], []
-    
+
     for batch in tqdm(dataloader, total=len(dataloader), desc="TestBatches"):
         pos_a, pos_b, neg_a, neg_b = zip(*batch)
         pos_a = Batch.from_data_list(pos_a)
@@ -56,28 +56,23 @@ def test(model, dataloader):
         neg_b = neg_b.to(get_device())
 
         labels = torch.tensor(
-            [1] * (pos_a.num_graphs if pos_a else 0) +
-            [0] * neg_a.num_graphs
+            [1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs
         ).to(get_device())
 
         with torch.no_grad():
             # forward pass through GNN layers
-            emb_neg_a, emb_neg_b = (
-                model.encoder(neg_a),
-                model.encoder(neg_b))
+            emb_neg_a, emb_neg_b = (model.encoder(neg_a), model.encoder(neg_b))
             if pos_a:
-                emb_pos_a, emb_pos_b = (
-                    model.encoder(pos_a),
-                    model.encoder(pos_b))
+                emb_pos_a, emb_pos_b = (model.encoder(pos_a), model.encoder(pos_b))
                 emb_as = torch.cat((emb_pos_a, emb_neg_a), dim=0)
                 emb_bs = torch.cat((emb_pos_b, emb_neg_b), dim=0)
             else:
                 emb_as, emb_bs = emb_neg_a, emb_neg_b
-        
+
             # prediction from GNN
             pred = model(emb_as, emb_bs)
             raw_pred = model.predict(pred)
-            
+
             # prediction from classifier
             pred = model.classifier(raw_pred.unsqueeze(1)).argmax(dim=-1)
 
@@ -107,8 +102,9 @@ def test(model, dataloader):
         "Test. Count: {}. Acc: {:.4f}. "
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n     "
         "TN: {}. FP: {}. FN: {}. TP: {}".format(
-            len(pred), acc, prec, rec, auroc, avg_prec,
-            tn, fp, fn, tp))
+            len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp
+        )
+    )
 
 
 def validation(args, model, test_pts, logger, batch_n, epoch):
@@ -123,28 +119,23 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         neg_b = neg_b.to(get_device())
 
         labels = torch.tensor(
-            [1] * (pos_a.num_graphs if pos_a else 0) +
-            [0] * neg_a.num_graphs
+            [1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs
         ).to(get_device())
 
         with torch.no_grad():
             # forward pass through GNN layers
-            emb_neg_a, emb_neg_b = (
-                model.encoder(neg_a),
-                model.encoder(neg_b))
+            emb_neg_a, emb_neg_b = (model.encoder(neg_a), model.encoder(neg_b))
             if pos_a:
-                emb_pos_a, emb_pos_b = (
-                    model.encoder(pos_a),
-                    model.encoder(pos_b))
+                emb_pos_a, emb_pos_b = (model.encoder(pos_a), model.encoder(pos_b))
                 emb_as = torch.cat((emb_pos_a, emb_neg_a), dim=0)
                 emb_bs = torch.cat((emb_pos_b, emb_neg_b), dim=0)
             else:
                 emb_as, emb_bs = emb_neg_a, emb_neg_b
-        
+
             # prediction from GNN
             pred = model(emb_as, emb_bs)
             raw_pred = model.predict(pred)
-            
+
             # prediction from classifier
             pred = model.classifier(raw_pred.unsqueeze(1)).argmax(dim=-1)
 
@@ -173,9 +164,10 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         "Validation. Epoch {}. Count: {}. Acc: {:.4f}.\n"
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n"
         "TN: {}. FP: {}. FN: {}. TP: {}".format(
-            epoch, len(pred), acc, prec, rec, auroc, avg_prec,
-            tn, fp, fn, tp))
-    
+            epoch, len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp
+        )
+    )
+
     if not args.test:
         logger.add_scalar("Accuracy/test", acc, batch_n)
         logger.add_scalar("Precision/test", prec, batch_n)
@@ -212,7 +204,7 @@ def tart_test(user_config_file, feat_encoder):
 
     # validate user defined feature encoder
     feat_encoder = validate_feat_encoder(feat_encoder, config_json)
-    
+
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 
@@ -235,6 +227,6 @@ def tart_test(user_config_file, feat_encoder):
     loader = corpus.gen_data_loader(args.batch_size, train=(not args.test))
 
     summarize_tart_run(args)
-    
+
     # ====== TESTING ======
     test(model, loader)

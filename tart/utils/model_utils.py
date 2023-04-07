@@ -24,9 +24,7 @@ def build_model(model_type, args):
     model.to(get_device())
 
     if args.test and args.model_path:
-        model.load_state_dict(
-            torch.load(args.model_path, map_location=get_device())
-        )
+        model.load_state_dict(torch.load(args.model_path, map_location=get_device()))
 
     return model
 
@@ -34,30 +32,28 @@ def build_model(model_type, args):
 def build_optimizer(args, params):
     # build optimizer
     weight_decay = args.weight_decay
-    filter_fn = filter(lambda p : p.requires_grad, params)
+    filter_fn = filter(lambda p: p.requires_grad, params)
 
-    if args.opt == 'adam':
-        optimizer = optim.Adam(
-            filter_fn, lr=args.lr, weight_decay=weight_decay)
-    elif args.opt == 'sgd':
+    if args.opt == "adam":
+        optimizer = optim.Adam(filter_fn, lr=args.lr, weight_decay=weight_decay)
+    elif args.opt == "sgd":
         optimizer = optim.SGD(
-            filter_fn, lr=args.lr, momentum=0.95,
-            weight_decay=weight_decay)
-    elif args.opt == 'rmsprop':
-        optimizer = optim.RMSprop(
-            filter_fn, lr=args.lr, weight_decay=weight_decay)
-    elif args.opt == 'adagrad':
-        optimizer = optim.Adagrad(
-            filter_fn, lr=args.lr, weight_decay=weight_decay)
+            filter_fn, lr=args.lr, momentum=0.95, weight_decay=weight_decay
+        )
+    elif args.opt == "rmsprop":
+        optimizer = optim.RMSprop(filter_fn, lr=args.lr, weight_decay=weight_decay)
+    elif args.opt == "adagrad":
+        optimizer = optim.Adagrad(filter_fn, lr=args.lr, weight_decay=weight_decay)
 
-    if args.opt_scheduler == 'none':
+    if args.opt_scheduler == "none":
         return None, optimizer
-    elif args.opt_scheduler == 'step':
+    elif args.opt_scheduler == "step":
         scheduler = optim.lr_scheduler.StepLR(
-            optimizer, step_size=args.opt_decay_step,
-            gamma=args.opt_decay_rate)
-    elif args.opt_scheduler == 'cos':
+            optimizer, step_size=args.opt_decay_step, gamma=args.opt_decay_rate
+        )
+    elif args.opt_scheduler == "cos":
         scheduler = optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=args.opt_restart)
+            optimizer, T_max=args.opt_restart
+        )
 
     return scheduler, optimizer
