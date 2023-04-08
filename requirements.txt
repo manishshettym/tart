@@ -1,0 +1,11 @@
+pandas
+numpy
+pytest
+attrs
+tqdm
+networkx
+matplotlib
+openpyxl
+pycodestyle
+rich
+tensorboard
