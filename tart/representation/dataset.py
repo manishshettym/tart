@@ -5,7 +5,6 @@ import glob
 
 import torch
 import numpy as np
-from tqdm import tqdm
 from rich.progress import (
     track,
     Progress,
