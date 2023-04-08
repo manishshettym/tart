@@ -27,7 +27,7 @@ def read_graph_from_json(args, path: str) -> nx.Graph:
             edge_attrs[attr] = value
 
         G.add_edge(edge[0], edge[1], **edge_attrs)
-
+    
     return G
 
 
@@ -41,6 +41,10 @@ def featurize_graph(args, feat_encoder, g: nx.DiGraph, anchor=None) -> DSGraph:
         feat_encoder (function): encoder function that converts string to torch.tensor
         anchor (int, optional): anchor node id. Defaults to None.
     """
+
+    # make a copy of the nx graphview because
+    # we will be pickling the graph and we cannot pickle graphviews
+    g = g.copy()
 
     assert len(g.nodes) > 0, "Oops, graph has no nodes!"
     assert len(g.edges) > 0, "Oops, graph has no edges!"
