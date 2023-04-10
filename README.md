@@ -1,1 +1,1 @@
-# <img src="docs/tart.svg" alt="tart logo" height="35" align="left" style="margin-right:5px;"> tart
+# <img src="docs/tart.svg" alt="tart logo" height="35" align="left"> tart
