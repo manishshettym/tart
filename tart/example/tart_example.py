@@ -40,6 +40,6 @@ if __name__ == "__main__":
     tart_test(config_file, feat_encoder)
 
 
-# Give 2 options for text encoders
+# TODO: Give 2 predefined for text encoders
 # BPE and CodeBERT
-# custom is also possible.
+# custom is also possible (as shown above)

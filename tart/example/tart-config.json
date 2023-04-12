@@ -1,15 +1,14 @@
 {   
     "dataset": "example",
     "data_dir": "../data/example",
-    "feat_encoder": "../example/feat_encoder.py",
     "node_feats": ["f1", "f2"],
     "node_feat_dims": [768, 1],
     "node_feat_types": ["str", "int"],
     "edge_feats": ["e1"],
     "edge_feat_dims": [768],
     "edge_feat_types": ["str"],
-    "n_batches": 500,
-    "eval_interval": 100,
+    "n_batches": 100,
+    "eval_interval": 50,
     "batch_size": 4,
     "min_size": 2,
     "max_size": 3
