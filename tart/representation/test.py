@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+import inspect
 from rich.console import Console
 from rich.progress import (Progress, SpinnerColumn, TextColumn)
 
@@ -206,7 +207,8 @@ def tart_test(user_config_file, feat_encoder):
     args = config.init_user_configs(args, config_json)
 
     # validate user defined feature encoder
-    feat_encoder = validate_feat_encoder(feat_encoder, config_json)
+    if inspect.isfunction(feat_encoder):
+        feat_encoder = validate_feat_encoder(feat_encoder, config_json)
 
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
