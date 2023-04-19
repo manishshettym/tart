@@ -7,8 +7,8 @@
     "edge_feats": ["e1"],
     "edge_feat_dims": [768],
     "edge_feat_types": ["str"],
-    "n_batches": 100,
-    "eval_interval": 50,
+    "n_batches": 50,
+    "eval_interval": 20,
     "batch_size": 4,
     "min_size": 2,
     "max_size": 3
