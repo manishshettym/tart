@@ -10,10 +10,6 @@ from sklearn.metrics import roc_auc_score, confusion_matrix
 from sklearn.metrics import average_precision_score
 from deepsnap.batch import Batch
 
-from tart.representation import config
-from tart.utils.model_utils import get_device
-from tart.utils.config_utils import validate_feat_encoder
-
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, get_device
 from tart.utils.config_utils import validate_feat_encoder
