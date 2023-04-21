@@ -10,7 +10,8 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 
-from tart.representation.test import validation, test
+from tart.representation.encoders import get_feature_encoder
+from tart.representation.test import validation
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, build_optimizer, get_device
 from tart.utils.train_utils import init_logger, start_workers, make_validation_set
@@ -171,7 +172,7 @@ def train_loop(args, feat_encoder):
             worker.join()
 
 
-def tart_train(user_config_file, feat_encoder):
+def tart_train(user_config_file, feat_encoder=None):
     print_header()
     parser = argparse.ArgumentParser()
 
@@ -190,8 +191,11 @@ def tart_train(user_config_file, feat_encoder):
     args = config.init_user_configs(args, config_json)
 
     # validate user defined feature encoder
-    if inspect.isfunction(feat_encoder):
+    if feat_encoder and inspect.isfunction(feat_encoder):
         feat_encoder = validate_feat_encoder(feat_encoder, config_json)
+    # get supported feature encoder
+    else:
+        feat_encoder = get_feature_encoder(args.feat_encoder)
 
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
