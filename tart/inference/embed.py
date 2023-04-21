@@ -1,1 +1,228 @@
-# TODO: API to embed a large dataset of graphs (e.g. for use in a search engine)
+import os
+import glob
+import json
+from tqdm import tqdm
+import os.path as osp
+
+import ast
+import networkx as nx
+import torch
+import argparse
+from deepsnap.batch import Batch
+import torch.multiprocessing as mp
+
+from tart.representation.encoders import get_feature_encoder
+from tart.representation import config, models, dataset
+from tart.utils.model_utils import build_model, build_optimizer, get_device
+from tart.utils.graph_utils import read_graph_from_json, featurize_graph
+from tart.utils.tart_utils import print_header, summarize_tart_run
+
+
+# ########## MULTI PROC ##########
+
+def start_workers_process(in_queue, out_queue, args):
+    workers = []
+    for _ in tqdm(range(args.n_workers), desc="Workers"):
+        worker = mp.Process(
+            target=generate_neighborhoods,
+            args=(args, in_queue, out_queue)
+        )
+        worker.start()
+        workers.append(worker)
+
+    return workers
+
+
+def start_workers_embed(model, in_queue, out_queue, args):
+    workers = []
+    for _ in tqdm(range(args.n_workers), desc="Workers"):
+        worker = mp.Process(
+            target=generate_embeddings,
+            args=(args, model, in_queue, out_queue)
+        )
+        worker.start()
+        workers.append(worker)
+
+    return workers
+
+
+# ########## UTILITIES ##########
+
+# returns a featurized (sampled) radial neighborhood for all nodes in the graph
+def get_neighborhoods(args, graph, feat_encoder):
+    neighs = []
+
+    # find each node's neighbors via SSSP
+    for j, node in enumerate(graph.nodes):
+        shortest_paths = sorted(nx.single_source_shortest_path_length(
+            graph, node, cutoff=args.emb_sssp_radius).items(), key=lambda x: x[1])
+        neighbors = list(map(lambda x: x[0], shortest_paths))
+
+        if args.emb_subg_sample_size != 0:
+            # NOTE: random sampling of radius-hop neighbors,
+            # results in nodes w/o any edges between them!!
+            # Instead, sort neighbors by hops and chose top-K closest neighbors
+            neighbors = neighbors[: args.emb_subg_sample_size]
+
+        if len(neighbors) > 1:
+            # NOTE: G.subgraph([nodes]) returns the subG induced on [nodes]
+            # i.e., the subG containing the nodes in [nodes] and
+            # edges between these nodes => in this case, a (sampled) radial n'hood
+            neigh = graph.subgraph(neighbors)
+
+            neigh = featurize_graph(args, feat_encoder, neigh, anchor=0)
+            neighs.append(neigh)
+
+    return neighs
+
+
+# ########## PIPELINE FUNCTIONS ##########
+
+def generate_embeddings(args, model, in_queue, out_queue):
+    done = False
+    while not done:
+        msg, idx = in_queue.get()
+
+        if msg == "done":
+            done = True
+            break
+
+        # read only graphs of processed programs
+        try:
+            neighs = torch.load(osp.join(args.proc_dir, f'data_{idx}.pt'))
+        except:
+            out_queue.put(("complete"))
+            continue
+
+        with torch.no_grad():
+            emb = model.encoder(Batch.from_data_list(neighs).to(get_device()))
+            torch.save(emb, osp.join(args.emb_dir, f'emb_{idx}.pt'))
+
+        out_queue.put(("complete"))
+
+
+def generate_neighborhoods(args, in_queue, out_queue):
+    done = False
+    feat_encoder = get_feature_encoder(args.feat_encoder)
+
+    while not done:
+        msg, idx = in_queue.get()
+
+        if msg == "done":
+            done = True
+            break
+
+        raw_path = osp.join(args.raw_dir, f'example_{idx}.json')
+        graph = read_graph_from_json(args, raw_path)
+
+        if graph is None:
+            out_queue.put(("complete"))
+            continue
+
+        # save graph object for future apps like search
+        torch.save(graph, osp.join(args.graph_dir, f'data_{idx}.pt'))
+
+        # get neighborhoods of each node in the graph
+        neighs = get_neighborhoods(args, graph, feat_encoder)
+        torch.save(neighs, osp.join(args.proc_dir, f'data_{idx}.pt'))
+
+        del graph
+        del neighs
+
+        out_queue.put(("complete"))
+
+
+# ########## MAIN ##########
+
+def embed_main(args):
+
+    assert osp.exists(osp.dirname(args.raw_dir)), "raw_dir does not exist!"
+
+    if not osp.exists(args.graph_dir):
+        os.makedirs(args.graph_dir)
+
+    if not osp.exists(args.proc_dir):
+        os.makedirs(args.proc_dir)
+
+    if not osp.exists(args.emb_dir):
+        os.makedirs(args.emb_dir)
+
+    raw_paths = sorted(glob.glob(osp.join(args.raw_dir, '*.json')))
+
+    # ######### PHASE1: PROCESS GRAPHS #########
+
+    # util: to rename .py files into a standard filename format
+    # TODO: write to a txt file the mapping between index and original filename
+    # TODO: should we write the renamed files to a tmp folder?
+    for idx, p in enumerate(raw_paths):
+        os.rename(p, osp.join(args.raw_dir, f"example_{idx}.json"))
+
+    in_queue, out_queue = mp.Queue(), mp.Queue()
+    workers = start_workers_process(in_queue, out_queue, args)
+
+    for i in range(0, len(raw_paths)):
+        in_queue.put(("idx", i))
+
+    for _ in tqdm(range(0, len(raw_paths))):
+        msg = out_queue.get()
+
+    for _ in range(args.n_workers):
+        in_queue.put(("done", None))
+
+    for worker in workers:
+        worker.join()
+
+    # ######### EMBED GRAPHS #########
+
+    model = build_model(models.SubgraphEmbedder, args)
+    model.share_memory()
+
+    print("Moving model to device:", get_device())
+    model = model.to(get_device())
+    model.eval()
+
+    in_queue, out_queue = mp.Queue(), mp.Queue()
+    workers = start_workers_embed(model, in_queue, out_queue, args)
+
+    for i in range(0, len(raw_paths)):
+        in_queue.put(("idx", i))
+
+    for _ in tqdm(range(0, len(raw_paths))):
+        msg = out_queue.get()
+
+    for _ in range(args.n_workers):
+        in_queue.put(("done", None))
+
+    for worker in workers:
+        worker.join()
+
+
+def tart_embed(user_config_file, feat_encoder=None):
+    print_header()
+    parser = argparse.ArgumentParser()
+    
+    if feat_encoder:
+        raise NotImplementedError("Custom encoder not supported for embed.py; Coming soon!")
+
+    # reading user config from json file
+    with open(user_config_file) as f:
+        config_json = json.load(f)
+
+    # build configs and their defaults
+    config.build_optimizer_configs(parser)
+    config.build_model_configs(parser)
+    config.build_feature_configs(parser)
+
+    args = parser.parse_args()
+
+    # set user defined configs
+    args = config.init_user_configs(args, config_json)
+
+    # set default file paths for results
+    root_dir = osp.join(args.data_dir, 'embed')
+    args.raw_dir = osp.join(root_dir, 'raw')
+    args.graph_dir = osp.join(root_dir, 'graphs')
+    args.proc_dir = osp.join(root_dir, 'processed')
+    args.emb_dir = osp.join(root_dir, 'embs')
+
+    embed_main(args)

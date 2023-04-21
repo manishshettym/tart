@@ -10,8 +10,9 @@ model = None
 
 def codebert_encoder(x: str) -> torch.tensor:
     """feature encoder using CodeBert model"""
+    global tokenizer, model
+    
     tokens_ids = tokenizer.encode(x, truncation=True)
-
     tokens_tensor = torch.tensor(tokens_ids, device=my_device)
 
     with torch.no_grad():
@@ -24,7 +25,8 @@ def codebert_encoder(x: str) -> torch.tensor:
 
 def codebert_bpe_encoder(x: str) -> torch.tensor:
     """feature encoder using CodeBert BPE tokenizer"""
-    global max_len
+    global tokenizer, max_len
+    
     encoded_input = tokenizer(
         x,
         return_tensors="pt",
