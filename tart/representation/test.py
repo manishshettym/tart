@@ -182,7 +182,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         torch.save(model.state_dict(), args.model_path)
 
 
-def tart_test(user_config_file, feat_encoder=None):
+def tart_test(user_config_file):
     console.print("[bright_green underline]Testing Model[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
 
@@ -203,14 +203,10 @@ def tart_test(user_config_file, feat_encoder=None):
     # set user defined configs
     args = config.init_user_configs(args, config_json)
 
-    # validate user defined feature encoder
-    if feat_encoder and inspect.isfunction(feat_encoder):
-        feat_encoder = validate_feat_encoder(feat_encoder, config_json)
-    # get supported feature encoder
-    else:
-        feat_encoder = get_feature_encoder(args.feat_encoder)
+    # set feature encoder
+    feat_encoder = get_feature_encoder(args.feat_encoder)
+    validate_feat_encoder(feat_encoder, config_json)
     
-
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 

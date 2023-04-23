@@ -172,7 +172,7 @@ def train_loop(args, feat_encoder):
             worker.join()
 
 
-def tart_train(user_config_file, feat_encoder=None):
+def tart_train(user_config_file):
     print_header()
     parser = argparse.ArgumentParser()
 
@@ -190,12 +190,9 @@ def tart_train(user_config_file, feat_encoder=None):
     # set user defined configs
     args = config.init_user_configs(args, config_json)
 
-    # validate user defined feature encoder
-    if feat_encoder and inspect.isfunction(feat_encoder):
-        feat_encoder = validate_feat_encoder(feat_encoder, config_json)
-    # get supported feature encoder
-    else:
-        feat_encoder = get_feature_encoder(args.feat_encoder)
+    # set feature encoder
+    feat_encoder = get_feature_encoder(args.feat_encoder)
+    validate_feat_encoder(feat_encoder, config_json)
 
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
