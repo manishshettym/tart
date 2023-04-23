@@ -1,6 +1,7 @@
 {   
     "dataset": "example",
     "data_dir": "../data/example",
+    "feat_encoder": "CodeBert",
     "node_feats": ["f1", "f2"],
     "node_feat_dims": [768, 1],
     "node_feat_types": ["str", "int"],
@@ -11,5 +12,7 @@
     "eval_interval": 20,
     "batch_size": 4,
     "min_size": 2,
-    "max_size": 3
+    "max_size": 3,
+    "emb_sssp_radius": 3,
+    "emb_subg_sample_size": 10
 }
