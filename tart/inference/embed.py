@@ -12,10 +12,10 @@ from deepsnap.batch import Batch
 import torch.multiprocessing as mp
 
 from tart.representation.encoders import get_feature_encoder
-from tart.representation import config, models, dataset
+from tart.representation import config, models
 from tart.utils.model_utils import build_model, build_optimizer, get_device
 from tart.utils.graph_utils import read_graph_from_json, featurize_graph
-from tart.utils.tart_utils import print_header, summarize_tart_run
+from tart.utils.tart_utils import print_header
 
 
 # ########## MULTI PROC ##########
@@ -197,13 +197,10 @@ def embed_main(args):
         worker.join()
 
 
-def tart_embed(user_config_file, feat_encoder=None):
+def tart_embed(user_config_file):
     print_header()
     parser = argparse.ArgumentParser()
     
-    if feat_encoder:
-        raise NotImplementedError("Custom encoder not supported for embed.py; Coming soon!")
-
     # reading user config from json file
     with open(user_config_file) as f:
         config_json = json.load(f)
