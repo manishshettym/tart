@@ -14,9 +14,8 @@ import torch.multiprocessing as mp
 
 from tart.representation.encoders import get_feature_encoder
 from tart.representation import config, models
-from tart.utils.model_utils import build_model, build_optimizer, get_device
+from tart.utils.model_utils import build_model, get_device
 from tart.utils.graph_utils import read_graph_from_json, featurize_graph
-from tart.utils.tart_utils import print_header
 
 console = Console()
 

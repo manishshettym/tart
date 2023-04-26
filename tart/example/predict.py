@@ -12,9 +12,12 @@ if __name__ == "__main__":
     # get query graph
     query_json = "../data/example/test/raw/g1.json"
 
-    # locate search space embeddings
+    # call predict API to count subgraphs
     search_embs_dir = "../data/example/embed/embs"
-
-    # call predict API
     tart_predict(config_file, query_json, search_embs_dir,
                 outcome="count_subgraphs")
+    
+    # call predict API to check is subgraph
+    search_json = "../data/example/test/raw/g2.json"
+    tart_predict(config_file, query_json, search_json,
+                outcome="is_subgraph")
