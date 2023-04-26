@@ -12,10 +12,10 @@ if __name__ == "__main__":
     config_file = "tart-config.json"
 
     # call train API
-    tart_train(config_file)
+    # tart_train(config_file)
 
     # call test API
-    tart_test(config_file)
+    # tart_test(config_file)
 
     # call embed API
     tart_embed(config_file)

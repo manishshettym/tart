@@ -1,8 +1,9 @@
 import os
 import glob
 import json
-from tqdm import tqdm
 import os.path as osp
+from rich.progress import track, Progress, TextColumn, SpinnerColumn
+from rich.console import Console
 
 import ast
 import networkx as nx
@@ -17,31 +18,46 @@ from tart.utils.model_utils import build_model, build_optimizer, get_device
 from tart.utils.graph_utils import read_graph_from_json, featurize_graph
 from tart.utils.tart_utils import print_header
 
+console = Console()
 
 # ########## MULTI PROC ##########
 
 def start_workers_process(in_queue, out_queue, args):
     workers = []
-    for _ in tqdm(range(args.n_workers), desc="Workers"):
-        worker = mp.Process(
-            target=generate_neighborhoods,
-            args=(args, in_queue, out_queue)
-        )
-        worker.start()
-        workers.append(worker)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("Starting workers..{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task("", total=None)
+    
+        for _ in range(args.n_workers):
+            worker = mp.Process(
+                target=generate_neighborhoods,
+                args=(args, in_queue, out_queue)
+            )
+            worker.start()
+            workers.append(worker)
 
     return workers
 
 
 def start_workers_embed(model, in_queue, out_queue, args):
     workers = []
-    for _ in tqdm(range(args.n_workers), desc="Workers"):
-        worker = mp.Process(
-            target=generate_embeddings,
-            args=(args, model, in_queue, out_queue)
-        )
-        worker.start()
-        workers.append(worker)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("Starting workers..{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task("", total=None)
+
+        for _ in range(args.n_workers):
+            worker = mp.Process(
+                target=generate_embeddings,
+                args=(args, model, in_queue, out_queue)
+            )
+            worker.start()
+            workers.append(worker)
 
     return workers
 
@@ -163,7 +179,7 @@ def embed_main(args):
     for i in range(0, len(raw_paths)):
         in_queue.put(("idx", i))
 
-    for _ in tqdm(range(0, len(raw_paths))):
+    for _ in track(range(0, len(raw_paths)), description="Processing graphs"):
         msg = out_queue.get()
 
     for _ in range(args.n_workers):
@@ -177,7 +193,7 @@ def embed_main(args):
     model = build_model(models.SubgraphEmbedder, args)
     model.share_memory()
 
-    print("Moving model to device:", get_device())
+    console.print(f"\n[bright_green]\[tart] [/bright_green] Moving model to device: [bright_blue]{get_device()}[/bright_blue]\n")
     model = model.to(get_device())
     model.eval()
 
@@ -187,7 +203,7 @@ def embed_main(args):
     for i in range(0, len(raw_paths)):
         in_queue.put(("idx", i))
 
-    for _ in tqdm(range(0, len(raw_paths))):
+    for _ in track(range(0, len(raw_paths)), description="Embedding graphs"):
         msg = out_queue.get()
 
     for _ in range(args.n_workers):
@@ -198,7 +214,7 @@ def embed_main(args):
 
 
 def tart_embed(user_config_file):
-    print_header()
+    console.print("[bright_green underline]Embedding Search Space[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
     
     # reading user config from json file
