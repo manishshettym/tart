@@ -10,10 +10,7 @@ from sklearn.metrics import roc_auc_score, confusion_matrix
 from sklearn.metrics import average_precision_score
 from deepsnap.batch import Batch
 
-from tart.representation import config
-from tart.utils.model_utils import get_device
-from tart.utils.config_utils import validate_feat_encoder
-
+from tart.representation.encoders import get_feature_encoder
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, get_device
 from tart.utils.config_utils import validate_feat_encoder
@@ -185,7 +182,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         torch.save(model.state_dict(), args.model_path)
 
 
-def tart_test(user_config_file, feat_encoder):
+def tart_test(user_config_file):
     console.print("[bright_green underline]Testing Model[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
 
@@ -206,10 +203,10 @@ def tart_test(user_config_file, feat_encoder):
     # set user defined configs
     args = config.init_user_configs(args, config_json)
 
-    # validate user defined feature encoder
-    if inspect.isfunction(feat_encoder):
-        feat_encoder = validate_feat_encoder(feat_encoder, config_json)
-
+    # set feature encoder
+    feat_encoder = get_feature_encoder(args.feat_encoder)
+    validate_feat_encoder(feat_encoder, config_json)
+    
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 

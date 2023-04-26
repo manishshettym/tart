@@ -137,7 +137,7 @@ class GraphDataset(Dataset):
         return data
 
     def process(self):
-        """process and store python graphs as a Data object onto the disk"""
+        """process and store graphs as a Data object onto the disk"""
         count = 0
         graph_sizes = []
 

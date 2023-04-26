@@ -7,11 +7,13 @@ max_len = None
 tokenizer = None
 model = None
 
+# ########## FEATURE ENCODERS ##########
 
 def codebert_encoder(x: str) -> torch.tensor:
     """feature encoder using CodeBert model"""
+    global tokenizer, model
+    
     tokens_ids = tokenizer.encode(x, truncation=True)
-
     tokens_tensor = torch.tensor(tokens_ids, device=my_device)
 
     with torch.no_grad():
@@ -24,7 +26,8 @@ def codebert_encoder(x: str) -> torch.tensor:
 
 def codebert_bpe_encoder(x: str) -> torch.tensor:
     """feature encoder using CodeBert BPE tokenizer"""
-    global max_len
+    global tokenizer, max_len
+    
     encoded_input = tokenizer(
         x,
         return_tensors="pt",
@@ -36,7 +39,16 @@ def codebert_bpe_encoder(x: str) -> torch.tensor:
     return encoding
 
 
-def get_feature_encoder(encoder_name: str, **kwargs) -> Callable[[str], torch.tensor]:
+
+# ########## FEATURE ENCODER FACTORY ##########
+
+ENCODER_STRATEGY = {
+    'CodeBert': codebert_encoder,
+    'CodeBertBPE': codebert_bpe_encoder,
+}
+
+
+def get_feature_encoder(encoder_name: str, **kwargs) -> Callable[[str], torch.tensor]:  
     global tokenizer, model, max_len
 
     if encoder_name == "CodeBert":
@@ -45,7 +57,7 @@ def get_feature_encoder(encoder_name: str, **kwargs) -> Callable[[str], torch.te
         model = RobertaModel.from_pretrained(codebert_name).to(my_device)
         model.eval()
 
-        return codebert_encoder
+        return ENCODER_STRATEGY[encoder_name]
 
     elif encoder_name == "CodeBertBPE":
         try:
@@ -58,16 +70,21 @@ def get_feature_encoder(encoder_name: str, **kwargs) -> Callable[[str], torch.te
         codebert_name = "microsoft/codebert-base"
         tokenizer = RobertaTokenizer.from_pretrained(codebert_name)
 
-        return codebert_bpe_encoder
+        return ENCODER_STRATEGY[encoder_name]
 
     elif encoder_name == "Bert":
         raise NotImplementedError
 
     elif encoder_name == "BertBPE":
         raise NotImplementedError
+    
+    elif encoder_name == "GPT2":
+        raise NotImplementedError
+    
+    elif encoder_name == "GPT3":
+        raise NotImplementedError
 
     else:
-        # raise that this encoder is not supported
-        raise "Encoder {} is not a default encoder! You can implement it as a custom encoder.".format(
-            encoder_name
-        )
+        raise ValueError(f"Oops, {encoder_name} is not a default encoder!\
+            You can register it as a custom encoder in encoders.py!.")
+
