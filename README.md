@@ -1,4 +1,4 @@
-# <img src="docs/tart.svg" alt="tart logo" height="52" align="absbottom" align="left"> [`tart`](): tensor abstracted relations and topologies
+# <img src="docs/_static/tart.svg" alt="tart logo" height="52" align="absbottom" align="left"> [`tart`](): tensor abstracted relations and topologies
 
 
 
