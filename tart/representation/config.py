@@ -8,18 +8,14 @@ def build_model_configs(parser):
     # Initialize encoder model configs
     enc_args = parser.add_argument_group()
 
-    enc_args.add_argument(
-        "--agg_type", type=str, help="type of aggregation/convolution"
-    )
+    enc_args.add_argument("--agg_type", type=str, help="type of aggregation/convolution")
     enc_args.add_argument("--batch_size", type=int, help="Training batch size")
     enc_args.add_argument("--n_layers", type=int, help="Number of graph conv layers")
     enc_args.add_argument("--hidden_dim", type=int, help="Training hidden size")
     enc_args.add_argument("--skip", type=str, help='"all" or "last"')
     enc_args.add_argument("--dropout", type=float, help="Dropout rate")
     enc_args.add_argument("--n_iters", type=int, help="Number of training iterations")
-    enc_args.add_argument(
-        "--n_batches", type=int, help="Number of training minibatches"
-    )
+    enc_args.add_argument("--n_batches", type=int, help="Number of training minibatches")
     enc_args.add_argument("--margin", type=float, help="margin for loss")
     enc_args.add_argument("--dataset", type=str, help="Dataset name")
     enc_args.add_argument(
@@ -28,9 +24,7 @@ def build_model_configs(parser):
         help="path to the root directory of the train/test sub-directories",
     )
     enc_args.add_argument("--test_set", type=str, help="test set filename")
-    enc_args.add_argument(
-        "--eval_interval", type=int, help="how often to eval during training"
-    )
+    enc_args.add_argument("--eval_interval", type=int, help="how often to eval during training")
     enc_args.add_argument("--val_size", type=int, help="validation set size")
     enc_args.add_argument("--model_path", type=str, help="path to save/load model")
     enc_args.add_argument("--opt_scheduler", type=str, help="scheduler name")
@@ -98,36 +92,21 @@ def build_optimizer_configs(parser):
         help="Learning rate decay ratio",
     )
     opt_parser.add_argument("--lr", dest="lr", type=float, help="Learning rate.")
-    opt_parser.add_argument(
-        "--clip", dest="clip", type=float, help="Gradient clipping."
-    )
-    opt_parser.add_argument(
-        "--weight_decay", type=float, help="Optimizer weight decay."
-    )
+    opt_parser.add_argument("--clip", dest="clip", type=float, help="Gradient clipping.")
+    opt_parser.add_argument("--weight_decay", type=float, help="Optimizer weight decay.")
 
-    opt_parser.set_defaults(
-        opt="adam", opt_scheduler="none", opt_restart=100, weight_decay=0.0, lr=1e-4
-    )
+    opt_parser.set_defaults(opt="adam", opt_scheduler="none", opt_restart=100, weight_decay=0.0, lr=1e-4)
 
 
 def build_feature_configs(parser):
     feat_parser = parser.add_argument_group()
-    feat_parser.add_argument(
-        "--node_feats", nargs="+", help="node features to use in training"
-    )
-    feat_parser.add_argument(
-        "--edge_feats", nargs="+", help="edge features to use in training"
-    )
-    feat_parser.add_argument(
-        "--node_feat_dims", nargs="+", help="node feature dimension"
-    )
-    feat_parser.add_argument(
-        "--edge_feat_dims", nargs="+", help="edge feature dimension"
-    )
+    feat_parser.add_argument("--node_feats", nargs="+", help="node features to use in training")
+    feat_parser.add_argument("--edge_feats", nargs="+", help="edge features to use in training")
+    feat_parser.add_argument("--node_feat_dims", nargs="+", help="node feature dimension")
+    feat_parser.add_argument("--edge_feat_dims", nargs="+", help="edge feature dimension")
 
 
 def init_user_configs(args, configs_json):
-
     # check if node_feats and edge_feats are provided
     if "node_feats" not in configs_json:
         raise ValueError("node_feats not provided in configs.json")
@@ -137,11 +116,7 @@ def init_user_configs(args, configs_json):
     # check if there is an overlap between node_feats and edge_feats
     feat_overlap = set(configs_json["node_feats"]) & set(configs_json["edge_feats"])
     if len(feat_overlap) > 0:
-        raise ValueError(
-            "node and edge feats overlap on features: {}! Please rename them. ".format(
-                feat_overlap
-            )
-        )
+        raise ValueError("node and edge feats overlap on features: {}! Please rename them. ".format(feat_overlap))
 
     args.node_feats = configs_json["node_feats"] + [
         "node_degree",

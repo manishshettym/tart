@@ -5,7 +5,7 @@ import json
 import glob
 import argparse
 from rich.console import Console
-from rich.progress import (Progress, SpinnerColumn, TextColumn)
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import numpy as np
 import torch
@@ -24,11 +24,11 @@ console = Console()
 
 def search_space_sample(src_dir: str, k=None, seed=24):
     np.random.seed(seed)
-    files = [f for f in sorted(glob.glob(osp.join(src_dir, '*.pt')))]
+    files = [f for f in sorted(glob.glob(osp.join(src_dir, "*.pt")))]
     if k is None:
         k = len(files)
     random_files = np.random.choice(files, min(len(files), k))
-    random_index = [f.split('_')[-1][:-3] for f in random_files]
+    random_index = [f.split("_")[-1][:-3] for f in random_files]
 
     return random_files, random_index
 
@@ -36,11 +36,11 @@ def search_space_sample(src_dir: str, k=None, seed=24):
 def read_embedding(args, idx):
     emb_path = f"emb_{idx}.pt"
     emb_path = osp.join(args.emb_dir, emb_path)
-    return torch.load(emb_path, map_location=torch.device('cpu'))
+    return torch.load(emb_path, map_location=torch.device("cpu"))
 
 
 def load_search_space(args, file_indices):
-    '''load embeddings of search space graphs into a list of batches'''
+    """load embeddings of search space graphs into a list of batches"""
     embs, batch_embs = [], []
     count = 0
 
@@ -63,14 +63,14 @@ def load_search_space(args, file_indices):
 
 
 def predict_neighs_batched(model, search_embs, query_emb):
-    '''(batched) predict number of neighborhoods in which
+    """(batched) predict number of neighborhoods in which
     query graph (query_emb) is subgraph of search graphs (embs)
 
     Args:
         model (tart.representation.models.TART): trained TART model
         search_embs (list): list of embeddings of search graphs
         query_emb (torch.Tensor): embedding of query graph
-    '''
+    """
     score = 0
 
     with Progress(
@@ -82,21 +82,25 @@ def predict_neighs_batched(model, search_embs, query_emb):
 
         for emb_batch in search_embs:
             with torch.no_grad():
-                predictions, _ = model.predictv2((
-                    emb_batch.to(get_device()),
-                    query_emb))
+                predictions, _ = model.predictv2((emb_batch.to(get_device()), query_emb))
                 score += torch.sum(predictions).item()
 
     return score
 
 
-def tart_predict(user_config_file, query_json, search_space_path, search_sample=None, outcome="count_subgraphs"):
+def tart_predict(
+    user_config_file,
+    query_json,
+    search_space_path,
+    search_sample=None,
+    outcome="count_subgraphs",
+):
     """predict API for tart
 
     Args:
         user_config_file (_type_): json file containing user defined configs
         query_json (_type_): json file containing query graph
-        search_space_path (_type_): path to either 
+        search_space_path (_type_): path to either
             (1) a directory containing embeddings of search space
             (2) a single json file containing a search graph
         outcome (str, optional): prediction task = {count_subgraphs, is_subgraph}. Defaults to "count_subgraphs".
@@ -150,7 +154,6 @@ def tart_predict(user_config_file, query_json, search_space_path, search_sample=
 
     # ======= PREDICT =========
     if outcome == "count_subgraphs":
-
         # load search space embeddings
         _, file_indices = search_space_sample(search_space_path, k=search_sample, seed=4)
         search_embs = load_search_space(args, file_indices)
@@ -165,7 +168,6 @@ def tart_predict(user_config_file, query_json, search_space_path, search_sample=
         # TODO: count number of graphs in which query was found as a subG.
 
     elif outcome == "is_subgraph":  # predict if query graph is subgraph of search graph
-
         # featurize the search graph (like in embed.py)
         search_graph = read_graph_from_json(args, query_json)
         console.print(f"Search graph: {search_graph}")

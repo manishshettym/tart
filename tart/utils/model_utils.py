@@ -44,9 +44,7 @@ def build_optimizer(args, params):
     if args.opt == "adam":
         optimizer = optim.Adam(filter_fn, lr=args.lr, weight_decay=weight_decay)
     elif args.opt == "sgd":
-        optimizer = optim.SGD(
-            filter_fn, lr=args.lr, momentum=0.95, weight_decay=weight_decay
-        )
+        optimizer = optim.SGD(filter_fn, lr=args.lr, momentum=0.95, weight_decay=weight_decay)
     elif args.opt == "rmsprop":
         optimizer = optim.RMSprop(filter_fn, lr=args.lr, weight_decay=weight_decay)
     elif args.opt == "adagrad":
@@ -55,12 +53,8 @@ def build_optimizer(args, params):
     if args.opt_scheduler == "none":
         return None, optimizer
     elif args.opt_scheduler == "step":
-        scheduler = optim.lr_scheduler.StepLR(
-            optimizer, step_size=args.opt_decay_step, gamma=args.opt_decay_rate
-        )
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.opt_decay_step, gamma=args.opt_decay_rate)
     elif args.opt_scheduler == "cos":
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=args.opt_restart
-        )
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.opt_restart)
 
     return scheduler, optimizer

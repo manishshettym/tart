@@ -3,7 +3,7 @@ import json
 import argparse
 import inspect
 from rich.console import Console
-from rich.progress import (Progress, SpinnerColumn, TextColumn)
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import torch
 from sklearn.metrics import roc_auc_score, confusion_matrix
@@ -56,9 +56,7 @@ def test(model, dataloader):
             neg_a = neg_a.to(get_device())
             neg_b = neg_b.to(get_device())
 
-            labels = torch.tensor(
-                [1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs
-            ).to(get_device())
+            labels = torch.tensor([1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs).to(get_device())
 
             with torch.no_grad():
                 # forward pass through GNN layers
@@ -101,9 +99,7 @@ def test(model, dataloader):
     console.print(
         "\nTest. Count: {}. Acc: {:.4f}.\n"
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n"
-        "TN: {}. FP: {}. FN: {}. TP: {}".format(
-            len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp
-        )
+        "TN: {}. FP: {}. FN: {}. TP: {}".format(len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp)
     )
 
 
@@ -118,9 +114,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         neg_a = neg_a.to(get_device())
         neg_b = neg_b.to(get_device())
 
-        labels = torch.tensor(
-            [1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs
-        ).to(get_device())
+        labels = torch.tensor([1] * (pos_a.num_graphs if pos_a else 0) + [0] * neg_a.num_graphs).to(get_device())
 
         with torch.no_grad():
             # forward pass through GNN layers
@@ -163,9 +157,7 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
     console.print(
         "Validation. Epoch {}. Count: {}. Acc: {:.4f}.\n"
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n"
-        "TN: {}. FP: {}. FN: {}. TP: {}".format(
-            epoch, len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp
-        )
+        "TN: {}. FP: {}. FN: {}. TP: {}".format(epoch, len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp)
     )
 
     if not args.test:
@@ -206,7 +198,7 @@ def tart_test(user_config_file):
     # set feature encoder
     feat_encoder = get_feature_encoder(args.feat_encoder)
     validate_feat_encoder(feat_encoder, config_json)
-    
+
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 

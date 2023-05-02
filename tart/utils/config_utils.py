@@ -1,11 +1,8 @@
 def validate_feat_encoder(user_feat_encoder, config_json):
-
     str_feat_idx = config_json["node_feat_types"].index("str")
 
     # check if the function takes a string and returns a torch.tensor using a sample input
-    assert (
-        user_feat_encoder.__code__.co_argcount == 1
-    ), "feat_encoder must take a single (str) argument"
+    assert user_feat_encoder.__code__.co_argcount == 1, "feat_encoder must take a single (str) argument"
 
     # check if the function takes a string and returns a torch.tensor
     # expected shape = config_json['node_feat_dim'][0] (assumes all features use the same encoder)
