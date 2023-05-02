@@ -18,6 +18,13 @@ def get_device():
     return DEVICE_CACHE
 
 
+def get_torch_tensor_type():
+    if torch.cuda.is_available():
+        return torch.cuda.FloatTensor
+    else:
+        return torch.FloatTensor
+
+
 def build_model(model_type, args):
     # build model
     model = model_type(1, args.hidden_dim, args)

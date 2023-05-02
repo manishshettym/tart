@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch_geometric.nn as pyg_nn
 import torch_geometric.utils as pyg_utils
 
-from tart.utils.model_utils import get_device
+from tart.utils.model_utils import get_device, get_torch_tensor_type
 
 
 class Preprocess(nn.Module):
@@ -131,7 +131,7 @@ class SubgraphEmbedder(nn.Module):
         assert subtract.shape == (batch_size, emb_size)
 
         # 1 if violating the order constraint
-        indicator = (subtract > 0).type(torch.cuda.FloatTensor)
+        indicator = (subtract > 0).type(get_torch_tensor_type())
         # note: if no gpu, comment above and uncomment below
         # indicator = (subtract > 0).type(torch.FloatTensor)
 
@@ -142,7 +142,7 @@ class SubgraphEmbedder(nn.Module):
         # 1 indicates violation is in < DIM_RATIO*emb_size dimensions => subgraph
         # 0 indicates otherwise. => !subgraph
         predictions = (
-            (indicator_sum < MAX_VIO_DIMS).view(-1, 1).type(torch.cuda.FloatTensor)
+            (indicator_sum < MAX_VIO_DIMS).view(-1, 1).type(get_torch_tensor_type())
         )
         scores = 1 - indicator_sum / emb_size
 

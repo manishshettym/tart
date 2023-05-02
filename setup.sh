@@ -14,6 +14,3 @@ pip install torch-geometric
 # torch-cluster -f https://pytorch-geometric.com/whl/torch-1.13.0+cpu.html
 # torch-spline-conv -f https://pytorch-geometric.com/whl/torch-1.13.0+cpu.html
 # torch_geometric
-
-pip install .
-python setup.py develop
