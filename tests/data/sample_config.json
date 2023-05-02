@@ -1,0 +1,9 @@
+{   
+    "feat_encoder": "CodeBert",
+    "node_feats": ["f1", "f2"],
+    "node_feat_dims": [768, 1],
+    "node_feat_types": ["str", "int"],
+    "edge_feats": ["e1"],
+    "edge_feat_dims": [768],
+    "edge_feat_types": ["str"]
+}
