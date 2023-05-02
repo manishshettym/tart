@@ -3,8 +3,7 @@ on: [push]
 
 jobs:
   black-pytype:
-    # do not run on pull_request_target since it should be triggered by pull_request
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request')
+    if: (github.event_name == 'push') || (github.event_name == 'pull_request')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -29,8 +28,7 @@ jobs:
       - name: pytype
         run: poetry run pytype --config .pytype.cfg -j 2
   test-unit:
-    # do not run on pull_request_target since it should be triggered by pull_request
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request')
+    if: (github.event_name == 'push') || (github.event_name == 'pull_request')
     runs-on: ubuntu-latest
     strategy:
       matrix:
