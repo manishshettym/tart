@@ -68,7 +68,7 @@ exclude_patterns = ["build", "_build", "Thumbs.db", ".DS_Store", "README.md"]
 # -- Options for HTML output
 
 html_theme = "furo"
-html_theme_options = {"light_logo": "tart.svg", "dark_logo": "tart.svg", "sidebar_hide_name": True}
+html_theme_options = {"light_logo": "tart-title.svg", "dark_logo": "tart-title.svg", "sidebar_hide_name": True}
 html_favicon = "_static/favicon.ico"
 html_static_path = ["_static"]
 
