@@ -27,7 +27,7 @@ def read_graph_from_json(args, path: str) -> nx.Graph:
             edge_attrs[attr] = value
 
         G.add_edge(edge[0], edge[1], **edge_attrs)
-    
+
     return G
 
 
@@ -77,7 +77,6 @@ def featurize_graph(args, feat_encoder, g: nx.DiGraph, anchor=None) -> DSGraph:
 
     for e in g.edges:
         for f, t in zip(args.edge_feats, args.edge_feat_types):
-
             # previously featurized this edge
             if f + "_t" in g.edges[e]:
                 continue

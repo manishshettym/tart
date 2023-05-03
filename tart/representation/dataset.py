@@ -36,7 +36,6 @@ class Corpus:
     """
 
     def __init__(self, args, feat_encoder, train=True):
-
         if train:
             self.train_dataset = GraphDataset(
                 root=f"{args.data_dir}/train",
@@ -195,27 +194,17 @@ class GraphDataset(Dataset):
 
                 size = random.randint(self.min_size + 1, self.max_size)
                 graph_t, t = self.sample_neigh(graph_sizes, count, size)
-                graph_q, q = self.sample_neigh(
-                    graph_sizes, count, random.randint(self.min_size, size - 1)
-                )
+                graph_q, q = self.sample_neigh(graph_sizes, count, random.randint(self.min_size, size - 1))
 
                 neg_t_anchor = list(graph_t.nodes)[0]
                 neg_q_anchor = list(graph_q.nodes)[0]
                 neg_t, neg_q = graph_t.subgraph(t), graph_q.subgraph(q)
 
                 # translate to DeepSnap Graph
-                pos_t = featurize_graph(
-                    self.args, self.feat_encoder, pos_t, pos_t_anchor
-                )
-                pos_q = featurize_graph(
-                    self.args, self.feat_encoder, pos_q, pos_q_anchor
-                )
-                neg_t = featurize_graph(
-                    self.args, self.feat_encoder, neg_t, neg_t_anchor
-                )
-                neg_q = featurize_graph(
-                    self.args, self.feat_encoder, neg_q, neg_q_anchor
-                )
+                pos_t = featurize_graph(self.args, self.feat_encoder, pos_t, pos_t_anchor)
+                pos_q = featurize_graph(self.args, self.feat_encoder, pos_q, pos_q_anchor)
+                neg_t = featurize_graph(self.args, self.feat_encoder, neg_t, neg_t_anchor)
+                neg_q = featurize_graph(self.args, self.feat_encoder, neg_q, neg_q_anchor)
 
                 data = [pos_t, pos_q, neg_t, neg_q]
                 torch.save(data, osp.join(self.processed_dir, f"data_{idx}.pt"))

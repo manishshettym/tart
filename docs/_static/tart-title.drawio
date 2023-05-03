@@ -1,0 +1,34 @@
+<mxfile host="Electron" modified="2023-05-02T17:21:28.876Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="p9xudXyRj79lYyPvC02j" version="21.1.2" type="device">
+  <diagram name="Page-1" id="0uBk1NRh_QXTfahNpWGE">
+    <mxGraphModel dx="855" dy="558" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="oMe5M2g71H5Wms87enhC-5" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="239.80499999999995" y="216.63" width="193.54500000000007" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="oMe5M2g71H5Wms87enhC-2" value="&lt;h1&gt;&lt;span class=&quot;s1&quot;&gt;&lt;b&gt;&lt;font face=&quot;Graphik&quot; style=&quot;font-size: 60px; face=&quot;&gt;tart&lt;/font&gt;&lt;/b&gt;&lt;/span&gt;&lt;/h1&gt;" style="text;whiteSpace=wrap;html=1;labelBackgroundColor=none;horizontal=1;" vertex="1" parent="oMe5M2g71H5Wms87enhC-5">
+          <mxGeometry x="43.54500000000007" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="45r6KMX3CsADxtNxQLWL-3" value="" style="shape=or;whiteSpace=wrap;html=1;rotation=90;strokeColor=#000000;fillColor=#b46504;container=0;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="6.19500000000005" y="74.37" width="10" height="15.63" as="geometry" />
+        </mxCell>
+        <mxCell id="z6cH-fZA_FC3KTX_m8WS-5" value="" style="shape=or;whiteSpace=wrap;html=1;rotation=90;strokeColor=#000000;fillColor=#b46504;container=0;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="16.19500000000005" y="76.37" width="10" height="15.63" as="geometry" />
+        </mxCell>
+        <mxCell id="z6cH-fZA_FC3KTX_m8WS-6" value="" style="shape=or;whiteSpace=wrap;html=1;rotation=90;strokeColor=#000000;fillColor=#b46504;container=0;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="25.19500000000005" y="74.37" width="10" height="15.63" as="geometry" />
+        </mxCell>
+        <mxCell id="45r6KMX3CsADxtNxQLWL-2" value="" style="triangle;whiteSpace=wrap;html=1;rotation=-90;strokeWidth=1;strokeColor=default;fillColor=#FFF4C3;gradientColor=#FFD966;gradientDirection=radial;rounded=1;shadow=0;container=0;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="-2.3549999999999613" y="37.73000000000002" width="45.9" height="41.19" as="geometry" />
+        </mxCell>
+        <mxCell id="PUXAt-mW4NGOIgoKi2m9-2" value="" style="triangle;whiteSpace=wrap;html=1;rotation=-90;strokeWidth=0.5;strokeColor=#d6b656;fillColor=#fff2cc;gradientDirection=radial;rounded=1;shadow=0;container=0;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="0.04500000000004434" y="41.370000000000005" width="41.01" height="35.55" as="geometry" />
+        </mxCell>
+        <mxCell id="z6cH-fZA_FC3KTX_m8WS-8" value="&lt;h2 style=&quot;line-height: 0%;&quot;&gt;&lt;font style=&quot;font-weight: normal; font-size: 32px;&quot; data-font-src=&quot;https://fonts.googleapis.com/css?family=Dongle&quot; face=&quot;Dongle&quot;&gt;⊆&lt;/font&gt;&lt;br&gt;&lt;/h2&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=1;points=[];autosize=1;strokeColor=none;fillColor=none;container=0;rounded=1;movable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="oMe5M2g71H5Wms87enhC-5" vertex="1">
+          <mxGeometry x="0.5550000000000637" y="40" width="40" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

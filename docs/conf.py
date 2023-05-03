@@ -1,13 +1,24 @@
 # Configuration file for the Sphinx documentation builder.
 
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("../tart"))
+
+
 # -- Project information
 
-project = 'tart'
-copyright = '2021, The tart authors'
-author = 'The tart authors'
+project = "tart"
+copyright = "2021, The tart authors"
+author = "The tart authors"
 
-release = '0.1'
-version = '0.1.0'
+release = "0.1"
+version = "0.1.0"
 
 # -- General configuration
 
@@ -29,12 +40,12 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+    "python": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
 }
-intersphinx_disabled_domains = ['std']
+intersphinx_disabled_domains = ["std"]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # autodoc
 autoclass_content = "both"  # include both class docstring and __init__
@@ -57,9 +68,13 @@ exclude_patterns = ["build", "_build", "Thumbs.db", ".DS_Store", "README.md"]
 # -- Options for HTML output
 
 html_theme = "furo"
-html_theme_options = {"light_logo": "tart.svg", "dark_logo": "tart.svg", "sidebar_hide_name": True}
+html_theme_options = {
+    "light_logo": "tart-title.svg",
+    "dark_logo": "tart-title.svg",
+    "sidebar_hide_name": True,
+}
 html_favicon = "_static/favicon.ico"
 html_static_path = ["_static"]
 
 # -- Options for EPUB output
-epub_show_urls = 'footnote'
+epub_show_urls = "footnote"

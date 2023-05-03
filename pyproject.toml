@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "tart"
+version = "0.1.0"
+description = ""
+authors = ["manishshettym <manishs@berkeley.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^2.0.1"
+numpy = "^1.24.3"
+pytest = "^7.3.1"
+attrs = "^23.1.0"
+tqdm = "^4.65.0"
+networkx = "^3.1"
+matplotlib = "^3.7.1"
+openpyxl = "^3.1.2"
+pycodestyle = "^2.10.0"
+rich = "^13.3.5"
+tensorboard = "^2.12.2"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=6.0.0"
+pytest-cov = ">=2.10.0"
+pytest-xdist = ">=2.0.0"
+black = "^23.1.0"
+
+[build-system]
+requires = ["setuptools", "poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"

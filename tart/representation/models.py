@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch_geometric.nn as pyg_nn
 import torch_geometric.utils as pyg_utils
 
-from tart.utils.model_utils import get_device
+from tart.utils.model_utils import get_device, get_torch_tensor_type
 
 
 class Preprocess(nn.Module):
@@ -90,9 +90,7 @@ class SubgraphEmbedder(nn.Module):
         margin = self.margin
 
         # rewrite loss for -ve examples
-        error[labels == 0] = torch.max(
-            torch.tensor(0.0, device=get_device()), margin - error
-        )[labels == 0]
+        error[labels == 0] = torch.max(torch.tensor(0.0, device=get_device()), margin - error)[labels == 0]
 
         relation_loss = torch.sum(error)
 
@@ -131,7 +129,7 @@ class SubgraphEmbedder(nn.Module):
         assert subtract.shape == (batch_size, emb_size)
 
         # 1 if violating the order constraint
-        indicator = (subtract > 0).type(torch.cuda.FloatTensor)
+        indicator = (subtract > 0).type(get_torch_tensor_type())
         # note: if no gpu, comment above and uncomment below
         # indicator = (subtract > 0).type(torch.FloatTensor)
 
@@ -141,9 +139,7 @@ class SubgraphEmbedder(nn.Module):
 
         # 1 indicates violation is in < DIM_RATIO*emb_size dimensions => subgraph
         # 0 indicates otherwise. => !subgraph
-        predictions = (
-            (indicator_sum < MAX_VIO_DIMS).view(-1, 1).type(torch.cuda.FloatTensor)
-        )
+        predictions = (indicator_sum < MAX_VIO_DIMS).view(-1, 1).type(get_torch_tensor_type())
         scores = 1 - indicator_sum / emb_size
 
         return predictions, scores
@@ -208,9 +204,7 @@ class BasicGNN(nn.Module):
 
         # graph isomorphism + weighted edges
         elif type == "GIN":
-            return lambda i, h: WeightedGINConv(
-                nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h))
-            )
+            return lambda i, h: WeightedGINConv(nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Linear(h, h)))
 
         # graph isomorphism net + edge features
         elif type == "GINE":
@@ -304,10 +298,7 @@ class WeightedGINConv(pyg_nn.MessagePassing):
         """"""
         x = x.unsqueeze(-1) if x.dim() == 1 else x
         edge_index, edge_weight = pyg_utils.remove_self_loops(edge_index, edge_weight)
-        out = self.nn(
-            (1 + self.eps) * x
-            + self.propagate(edge_index, x=x, edge_weight=edge_weight)
-        )
+        out = self.nn((1 + self.eps) * x + self.propagate(edge_index, x=x, edge_weight=edge_weight))
         return out
 
     def message(self, x_j, edge_weight):

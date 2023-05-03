@@ -127,3 +127,7 @@ tmp/
 results/
 archive/
 ckpt/
+
+# test cache
+.pytest_cache/
+.pytype

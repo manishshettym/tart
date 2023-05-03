@@ -67,9 +67,7 @@ def train(args, model, corpus, in_queue, out_queue):
             emb_as = torch.cat((emb_pos_a, emb_neg_a), dim=0)
             emb_bs = torch.cat((emb_pos_b, emb_neg_b), dim=0)
 
-            labels = torch.tensor([1] * pos_a.num_graphs + [0] * neg_a.num_graphs).to(
-                get_device()
-            )
+            labels = torch.tensor([1] * pos_a.num_graphs + [0] * neg_a.num_graphs).to(get_device())
 
             # make predictions
             pred = model(emb_as, emb_bs)
@@ -132,21 +130,15 @@ def train_loop(args, feat_encoder):
     validation_pts = make_validation_set(loader)
 
     assert args.n_iters > 0, "Number of iterations must be greater than 0"
-    assert (
-        args.n_batches // args.eval_interval > 0
-    ), "Number of epochs per iteration must be greater than 0"
+    assert args.n_batches // args.eval_interval > 0, "Number of epochs per iteration must be greater than 0"
 
     for iter in range(args.n_iters):
-        console.print(
-            f"\n[bright_green underline]Iteration #{iter}[/bright_green underline]\n"
-        )
+        console.print(f"\n[bright_green underline]Iteration #{iter}[/bright_green underline]\n")
         workers = start_workers(train, model, corpus, in_queue, out_queue, args)
 
         batch_n = 0
         for epoch in range(args.n_batches // args.eval_interval):
-            console.print(
-                f"\n[bright_blue]=============== Epoch #{epoch} ===============[/ bright_blue]"
-            )
+            console.print(f"\n[bright_blue]=============== Epoch #{epoch} ===============[/ bright_blue]")
 
             for _ in range(args.eval_interval):
                 in_queue.put(("step", None))
@@ -155,9 +147,7 @@ def train_loop(args, feat_encoder):
             for _ in range(args.eval_interval):
                 _, result = out_queue.get()
                 train_loss, train_acc = result
-                console.print(
-                    f"Batch {batch_n}. Loss: {train_loss:.4f}. Train acc: {train_acc:.4f}\n"
-                )
+                console.print(f"Batch {batch_n}. Loss: {train_loss:.4f}. Train acc: {train_acc:.4f}\n")
 
                 logger.add_scalar("Loss(train)", train_loss, batch_n)
                 logger.add_scalar("Acc(train)", train_acc, batch_n)

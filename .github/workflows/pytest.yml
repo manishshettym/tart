@@ -1,0 +1,55 @@
+name: pytest
+on: [push]
+
+jobs:
+  black-pytype:
+    if: (github.event_name == 'push') || (github.event_name == 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Set Poetry config
+        run: |
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+      - name: Install Dependencies
+        run: |
+          poetry install
+          poetry run sh setup.sh
+          poetry run pip install -r requirements-dev.txt
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: black
+        run: poetry run black . --check --line-length=140
+      - name: pytype
+        run: poetry run pytype --config .pytype.cfg -j 2
+  test-unit:
+    if: (github.event_name == 'push') || (github.event_name == 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Set Poetry config
+        run: |
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+      - name: Install Dependencies
+        run: |
+          poetry install
+          poetry run sh setup.sh
+          poetry run pip install -r requirements-dev.txt
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Run unit tests
+        run: |
+          poetry run pytest -s tests

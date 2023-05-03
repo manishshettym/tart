@@ -21,6 +21,7 @@ console = Console()
 
 # ########## MULTI PROC ##########
 
+
 def start_workers_process(in_queue, out_queue, args):
     workers = []
     with Progress(
@@ -29,12 +30,9 @@ def start_workers_process(in_queue, out_queue, args):
         transient=True,
     ) as progress:
         progress.add_task("", total=None)
-    
+
         for _ in range(args.n_workers):
-            worker = mp.Process(
-                target=generate_neighborhoods,
-                args=(args, in_queue, out_queue)
-            )
+            worker = mp.Process(target=generate_neighborhoods, args=(args, in_queue, out_queue))
             worker.start()
             workers.append(worker)
 
@@ -51,10 +49,7 @@ def start_workers_embed(model, in_queue, out_queue, args):
         progress.add_task("", total=None)
 
         for _ in range(args.n_workers):
-            worker = mp.Process(
-                target=generate_embeddings,
-                args=(args, model, in_queue, out_queue)
-            )
+            worker = mp.Process(target=generate_embeddings, args=(args, model, in_queue, out_queue))
             worker.start()
             workers.append(worker)
 
@@ -63,14 +58,14 @@ def start_workers_embed(model, in_queue, out_queue, args):
 
 # ########## UTILITIES ##########
 
+
 # returns a featurized (sampled) radial neighborhood for all nodes in the graph
 def get_neighborhoods(args, graph, feat_encoder):
     neighs = []
 
     # find each node's neighbors via SSSP
     for j, node in enumerate(graph.nodes):
-        shortest_paths = sorted(nx.single_source_shortest_path_length(
-            graph, node, cutoff=args.emb_sssp_radius).items(), key=lambda x: x[1])
+        shortest_paths = sorted(nx.single_source_shortest_path_length(graph, node, cutoff=args.emb_sssp_radius).items(), key=lambda x: x[1])
         neighbors = list(map(lambda x: x[0], shortest_paths))
 
         if args.emb_subg_sample_size != 0:
@@ -93,6 +88,7 @@ def get_neighborhoods(args, graph, feat_encoder):
 
 # ########## PIPELINE FUNCTIONS ##########
 
+
 def generate_embeddings(args, model, in_queue, out_queue):
     done = False
     while not done:
@@ -104,14 +100,14 @@ def generate_embeddings(args, model, in_queue, out_queue):
 
         # read only graphs of processed programs
         try:
-            neighs = torch.load(osp.join(args.proc_dir, f'data_{idx}.pt'))
+            neighs = torch.load(osp.join(args.proc_dir, f"data_{idx}.pt"))
         except:
             out_queue.put(("complete"))
             continue
 
         with torch.no_grad():
             emb = model.encoder(Batch.from_data_list(neighs).to(get_device()))
-            torch.save(emb, osp.join(args.emb_dir, f'emb_{idx}.pt'))
+            torch.save(emb, osp.join(args.emb_dir, f"emb_{idx}.pt"))
 
         out_queue.put(("complete"))
 
@@ -127,7 +123,7 @@ def generate_neighborhoods(args, in_queue, out_queue):
             done = True
             break
 
-        raw_path = osp.join(args.raw_dir, f'example_{idx}.json')
+        raw_path = osp.join(args.raw_dir, f"example_{idx}.json")
         graph = read_graph_from_json(args, raw_path)
 
         if graph is None:
@@ -135,11 +131,11 @@ def generate_neighborhoods(args, in_queue, out_queue):
             continue
 
         # save graph object for future apps like search
-        torch.save(graph, osp.join(args.graph_dir, f'data_{idx}.pt'))
+        torch.save(graph, osp.join(args.graph_dir, f"data_{idx}.pt"))
 
         # get neighborhoods of each node in the graph
         neighs = get_neighborhoods(args, graph, feat_encoder)
-        torch.save(neighs, osp.join(args.proc_dir, f'data_{idx}.pt'))
+        torch.save(neighs, osp.join(args.proc_dir, f"data_{idx}.pt"))
 
         del graph
         del neighs
@@ -149,8 +145,8 @@ def generate_neighborhoods(args, in_queue, out_queue):
 
 # ########## MAIN ##########
 
-def embed_main(args):
 
+def embed_main(args):
     assert osp.exists(osp.dirname(args.raw_dir)), "raw_dir does not exist!"
 
     if not osp.exists(args.graph_dir):
@@ -162,7 +158,7 @@ def embed_main(args):
     if not osp.exists(args.emb_dir):
         os.makedirs(args.emb_dir)
 
-    raw_paths = sorted(glob.glob(osp.join(args.raw_dir, '*.json')))
+    raw_paths = sorted(glob.glob(osp.join(args.raw_dir, "*.json")))
 
     # ######### PHASE1: PROCESS GRAPHS #########
 
@@ -215,7 +211,7 @@ def embed_main(args):
 def tart_embed(user_config_file):
     console.print("[bright_green underline]Embedding Search Space[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
-    
+
     # reading user config from json file
     with open(user_config_file) as f:
         config_json = json.load(f)
@@ -231,10 +227,10 @@ def tart_embed(user_config_file):
     args = config.init_user_configs(args, config_json)
 
     # set default file paths for results
-    root_dir = osp.join(args.data_dir, 'embed')
-    args.raw_dir = osp.join(root_dir, 'raw')
-    args.graph_dir = osp.join(root_dir, 'graphs')
-    args.proc_dir = osp.join(root_dir, 'processed')
-    args.emb_dir = osp.join(root_dir, 'embs')
+    root_dir = osp.join(args.data_dir, "embed")
+    args.raw_dir = osp.join(root_dir, "raw")
+    args.graph_dir = osp.join(root_dir, "graphs")
+    args.proc_dir = osp.join(root_dir, "processed")
+    args.emb_dir = osp.join(root_dir, "embs")
 
     embed_main(args)
