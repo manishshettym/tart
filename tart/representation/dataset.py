@@ -231,8 +231,7 @@ class GraphDataset(Dataset):
             2. choose a random target graph
             3. perform random bfs traversal in neighborhood = size
             4. choose a random but anchored query = positive e.g.
-            5. repeat for negative e.g. but with different random graph
-            for the query
+            5. repeat for negative e.g. but with different random graph for the query
 
         Args:
             graph_sizes (List[int]): distribution of graph sizes
