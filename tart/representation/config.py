@@ -1,11 +1,16 @@
 """Configs for model and optimizer"""
 
-# TODO: Take a JSON as input when using the library
-# Read the json and populate these args on the fly
+from argparse import ArgumentParser, Namespace
+from typing import Dict
 
 
-def build_model_configs(parser):
-    # Initialize encoder model configs
+def build_model_configs(parser: ArgumentParser) -> None:
+    """build model config arguments
+
+    Args:
+        parser (ArgumentParser): argparse parser
+    """
+
     enc_args = parser.add_argument_group()
 
     enc_args.add_argument("--agg_type", type=str, help="type of aggregation/convolution")
@@ -64,7 +69,12 @@ def build_model_configs(parser):
     )
 
 
-def build_optimizer_configs(parser):
+def build_optimizer_configs(parser: ArgumentParser) -> None:
+    """build optimizer config arguments
+
+    Args:
+        parser (ArgumentParser): argparse parser
+    """
     opt_parser = parser.add_argument_group()
     opt_parser.add_argument("--opt", dest="opt", type=str, help="Type of optimizer")
     opt_parser.add_argument(
@@ -98,7 +108,12 @@ def build_optimizer_configs(parser):
     opt_parser.set_defaults(opt="adam", opt_scheduler="none", opt_restart=100, weight_decay=0.0, lr=1e-4)
 
 
-def build_feature_configs(parser):
+def build_feature_configs(parser: ArgumentParser) -> None:
+    """build graph feature config arguments
+
+    Args:
+        parser (ArgumentParser): argparse parser
+    """
     feat_parser = parser.add_argument_group()
     feat_parser.add_argument("--node_feats", nargs="+", help="node features to use in training")
     feat_parser.add_argument("--edge_feats", nargs="+", help="edge features to use in training")
@@ -106,7 +121,22 @@ def build_feature_configs(parser):
     feat_parser.add_argument("--edge_feat_dims", nargs="+", help="edge feature dimension")
 
 
-def init_user_configs(args, configs_json):
+def init_user_configs(args: Namespace, configs_json: Dict) -> Namespace:
+    """initialize user defined configs
+
+    Args:
+        args (Namespace): argparse namespace
+        configs_json (Dict): user defined configs
+
+    Raises:
+        ValueError: node_feats not provided in configs.json
+        ValueError: edge_feats not provided in configs.json
+        ValueError: node and edge feats names overlap
+
+    Returns:
+        Namespace: updated argparse namespace
+    """
+
     # check if node_feats and edge_feats are provided
     if "node_feats" not in configs_json:
         raise ValueError("node_feats not provided in configs.json")

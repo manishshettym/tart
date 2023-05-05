@@ -1,4 +1,16 @@
-def validate_feat_encoder(user_feat_encoder, config_json):
+from typing import Callable, Dict
+
+
+def validate_feat_encoder(user_feat_encoder: Callable, config_json: Dict) -> Callable:
+    """validate user defined feature encoder
+
+    Args:
+        user_feat_encoder (Callable): user defined feature encoder
+        config_json (Dict): user defined configs
+
+    Returns:
+        Callable: user defined feature encoder
+    """
     str_feat_idx = config_json["node_feat_types"].index("str")
 
     # check if the function takes a string and returns a torch.tensor using a sample input
