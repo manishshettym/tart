@@ -3,8 +3,6 @@ from typing import Tuple, Iterator
 
 import torch
 import torch.optim as optim
-from torch.optim.optimizer import Optimizer
-from torch.optim.lr_scheduler import LRScheduler
 
 DEVICE_CACHE = None
 
@@ -60,7 +58,7 @@ def build_model(model_type: torch.nn.Module, args: Namespace) -> torch.nn.Module
     return model
 
 
-def build_optimizer(args: Namespace, params: Iterator) -> Tuple[LRScheduler, Optimizer]:
+def build_optimizer(args: Namespace, params: Iterator) -> Tuple:
     """build optimizer and scheduler
 
     Args:
