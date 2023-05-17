@@ -99,7 +99,7 @@ def test(model, dataloader):
     console.print(
         "\nTest. Count: {}. Acc: {:.4f}.\n"
         "P: {:.4f}. R: {:.4f}. AUROC: {:.4f}. AP: {:.4f}.\n"
-        "TN: {}. FP: {}. FN: {}. TP: {}".format(len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp)
+        "TN: {}. FP: {}. FN: {}. TP: {}\n".format(len(pred), acc, prec, rec, auroc, avg_prec, tn, fp, fn, tp)
     )
 
 
@@ -174,7 +174,12 @@ def validation(args, model, test_pts, logger, batch_n, epoch):
         torch.save(model.state_dict(), args.model_path)
 
 
-def tart_test(user_config_file):
+def tart_test(user_config_file: str):
+    """tart's test API
+
+    Args:
+        user_config_file (str): config file path
+    """
     console.print("[bright_green underline]Testing Model[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
 

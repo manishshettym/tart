@@ -208,7 +208,12 @@ def embed_main(args):
         worker.join()
 
 
-def tart_embed(user_config_file):
+def tart_embed(user_config_file: str):
+    """tart's embed API
+
+    Args:
+        user_config_file (str): config file path
+    """
     console.print("[bright_green underline]Embedding Search Space[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
 

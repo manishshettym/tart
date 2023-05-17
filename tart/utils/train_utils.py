@@ -1,3 +1,4 @@
+import argparse
 from typing import List, Tuple, Callable
 from argparse import Namespace
 from rich.progress import track, Progress, TextColumn, SpinnerColumn
@@ -7,8 +8,17 @@ import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
+from test_tube import HyperOptArgumentParser
 
 from tart.representation.dataset import Corpus
+
+
+def set_parser(tune):
+    if tune:
+        parser = HyperOptArgumentParser(strategy="grid_search")
+    else:
+        parser = argparse.ArgumentParser()
+    return parser
 
 
 def init_logger(args: Namespace) -> SummaryWriter:

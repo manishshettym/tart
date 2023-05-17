@@ -1,7 +1,41 @@
 """Configs for model and optimizer"""
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict
+from test_tube import HyperOptArgumentParser
+from typing import Dict, List
+
+
+def make_tunable(parser: HyperOptArgumentParser, tunable: List[str]) -> None:
+    """make select arguments tunable
+
+    Args:
+        parser (ArgumentParser): argparse parser
+        tunable (List[str]): list of arguments to make tunable
+    """
+    for arg in tunable:
+        # remove arg from current parser
+        parser._option_string_actions.pop("--" + arg)
+
+        # add arg to test_tube parser
+        if arg == "batch_size":
+            parser.opt_list("--batch_size", type=int, help="Training batch size", tunable=True, default=64, options=[32, 64, 128])
+
+        elif arg == "agg_type":
+            parser.opt_list(
+                "--agg_type", type=str, help="type of aggregation", tunable=True, default="GINE", options=["GINE", "GIN", "GCN"]
+            )
+
+        elif arg == "n_layers":
+            parser.opt_list("--n_layers", type=int, help="Number of graph conv layers", tunable=True, default=7, options=[5, 7, 9, 11])
+
+        elif arg == "hidden_dim":
+            parser.opt_list("--hidden_dim", type=int, help="Training hidden size", tunable=True, default=64, options=[32, 64, 128])
+
+        elif arg == "skip":
+            parser.opt_list("--skip", type=str, help="skip connections", tunable=True, default="learnable", options=["all", "learnable"])
+
+        else:
+            raise ValueError("Argument {} is not tunable.".format(arg))
 
 
 def build_model_configs(parser: ArgumentParser) -> None:
@@ -17,7 +51,7 @@ def build_model_configs(parser: ArgumentParser) -> None:
     enc_args.add_argument("--batch_size", type=int, help="Training batch size")
     enc_args.add_argument("--n_layers", type=int, help="Number of graph conv layers")
     enc_args.add_argument("--hidden_dim", type=int, help="Training hidden size")
-    enc_args.add_argument("--skip", type=str, help='"all" or "last"')
+    enc_args.add_argument("--skip", type=str, help='"all" or "learnable"')
     enc_args.add_argument("--dropout", type=float, help="Dropout rate")
     enc_args.add_argument("--n_iters", type=int, help="Number of training iterations")
     enc_args.add_argument("--n_batches", type=int, help="Number of training minibatches")
@@ -121,7 +155,7 @@ def build_feature_configs(parser: ArgumentParser) -> None:
     feat_parser.add_argument("--edge_feat_dims", nargs="+", help="edge feature dimension")
 
 
-def init_user_configs(args: Namespace, configs_json: Dict) -> Namespace:
+def init_user_configs(args: Namespace, configs_json: Dict, tune: bool = False) -> Namespace:
     """initialize user defined configs
 
     Args:
@@ -172,6 +206,9 @@ def init_user_configs(args: Namespace, configs_json: Dict) -> Namespace:
             "edge_feat_types",
         ]
     ):
+        if tune and feat in configs_json["tunable"]:
+            raise ValueError(f"Feature {feat} is tunable. Please remove it from the config file.")
+
         setattr(args, feat, configs_json[feat])
 
     return args
