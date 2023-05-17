@@ -161,7 +161,7 @@ def train_loop(args, feat_encoder):
             worker.join()
 
 
-def tart_train(user_config_file: str, tune: bool = False, trials: int = None):
+def tart_train(user_config_file: str, tune: bool = False, trials: int = 0) -> None:
     """tart's train API
 
     Args:
