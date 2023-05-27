@@ -1,11 +1,22 @@
-import networkx as nx
 import json
+import networkx as nx
+from argparse import Namespace
+from typing import Callable
 
 import torch
 from deepsnap.graph import Graph as DSGraph
 
 
-def read_graph_from_json(args, path: str) -> nx.Graph:
+def read_graph_from_json(args: Namespace, path: str) -> nx.Graph:
+    """Read a graph from a json file
+
+    Args:
+        args (Namespace): tart configs
+        path (str): path to the json file
+
+    Returns:
+        nx.Graph: networkx graph
+    """
     with open(path, "r") as f:
         data = json.load(f)
 
@@ -31,17 +42,20 @@ def read_graph_from_json(args, path: str) -> nx.Graph:
     return G
 
 
-def featurize_graph(args, feat_encoder, g: nx.DiGraph, anchor=None) -> DSGraph:
+def featurize_graph(args: Namespace, feat_encoder: Callable, g: nx.DiGraph, anchor=None) -> DSGraph:
     """Featurize a networkx graph into a DeepSnap graph
     >> all features are converted to torch.tensor and added to the `{feat}_t` key
     >> string features are converted to torch.tensor by the encoder model
 
     Args:
+        args (Namespace): tart configs
+        feat_encoder (Callable):  encoder function that converts string to torch.tensor
         g (nx.DiGraph): networkx graph
-        feat_encoder (function): encoder function that converts string to torch.tensor
-        anchor (int, optional): anchor node id. Defaults to None.
-    """
+        anchor (_type_, optional): anchor node id. Defaults to None.
 
+    Returns:
+        DSGraph: DeepSnap graph
+    """
     # make a copy of the nx graphview because
     # we will be pickling the graph and we cannot pickle graphviews
     g = g.copy()

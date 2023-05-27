@@ -11,6 +11,10 @@ from tart.utils.model_utils import get_device, get_torch_tensor_type
 
 
 class Preprocess(nn.Module):
+    """Preprocesser for graph features. Identifies tensorized features
+    and concatenates them for both nodes and edges.
+    """
+
     def __init__(self, dim_in, args):
         super(Preprocess, self).__init__()
         self.dim_in = dim_in
@@ -58,6 +62,11 @@ class Preprocess(nn.Module):
 
 
 class SubgraphEmbedder(nn.Module):
+    """Model for order embeddings.
+    Uses a GNN (encoder) to embed graphs into a vector space, and then uses a
+    MLP (classifier) to predict if queries are subgraphs of targets.
+    """
+
     def __init__(self, input_dim, hidden_dim, args):
         super(SubgraphEmbedder, self).__init__()
         self.encoder = BasicGNN(input_dim, hidden_dim, hidden_dim, args)
@@ -146,6 +155,12 @@ class SubgraphEmbedder(nn.Module):
 
 
 class BasicGNN(nn.Module):
+    """Basic GNN model with the following configurable options:
+    - number of layers
+    - aggregation type
+    - skip connections
+    """
+
     def __init__(self, input_dim, hidden_dim, output_dim, args):
         super(BasicGNN, self).__init__()
         self.dropout = args.dropout
@@ -280,6 +295,8 @@ class BasicGNN(nn.Module):
 # UPDATE: GINConv does not take into account any edge features.
 # However, GINEConv [https://arxiv.org/abs/1905.12265] does.
 class WeightedGINConv(pyg_nn.MessagePassing):
+    """WeightedGINConv implementation for PyG."""
+
     def __init__(self, nn, eps=0, train_eps=False, **kwargs):
         super(WeightedGINConv, self).__init__(aggr="add", **kwargs)
         self.nn = nn

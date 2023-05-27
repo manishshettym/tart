@@ -1,7 +1,7 @@
 import os
 import json
-import argparse
-import inspect
+from argparse import Namespace
+from typing import Callable
 from rich.console import Console
 
 import torch
@@ -10,11 +10,12 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 
+from tart.representation.dataset import Corpus
 from tart.representation.encoders import get_feature_encoder
 from tart.representation.test import validation
 from tart.representation import config, models, dataset
 from tart.utils.model_utils import build_model, build_optimizer, get_device
-from tart.utils.train_utils import init_logger, start_workers, make_validation_set
+from tart.utils.train_utils import set_parser, init_logger, start_workers, make_validation_set
 from tart.utils.config_utils import validate_feat_encoder
 from tart.utils.tart_utils import print_header, summarize_tart_run
 
@@ -22,16 +23,16 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 console = Console()
 
 
-def train(args, model, corpus, in_queue, out_queue):
-    """
-    Train the model that was initialized
+def train(args: Namespace, model: nn.Module, corpus: Corpus, in_queue: mp.Queue, out_queue: mp.Queue):
+    """Train a single iteration for the model on a corpus of graphs.
+    NOTE: This function is called by each worker process.
 
     Args:
-        args: Commandline arguments
-        model: GNN model
-        corpus: dataset to train the GNN model
-        in_queue: input queue to an intersection computation worker
-        out_queue: output queue to an intersection computation worker
+        args (Namespace): tart configs
+        model (nn.Module): tart model to train
+        corpus (Corpus): corpus generator for graphs
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
     """
     scheduler, opt = build_optimizer(args, model.parameters())
     clf_opt = optim.Adam(model.classifier.parameters(), lr=args.lr)
@@ -100,7 +101,14 @@ def train(args, model, corpus, in_queue, out_queue):
             out_queue.put(("step", (train_loss, train_acc)))
 
 
-def train_loop(args, feat_encoder):
+def train_loop(args: Namespace, feat_encoder: Callable):
+    """train the model for a number of iterations
+    by spinning up a number of workers.
+
+    Args:
+        args (Namespace): tart configs
+        feat_encoder (Callable): encoder function that converts string to torch.tensor
+    """
     if not os.path.exists(os.path.dirname(args.model_path)):
         os.makedirs(os.path.dirname(args.model_path))
     if not os.path.exists("plots/"):
@@ -162,9 +170,16 @@ def train_loop(args, feat_encoder):
             worker.join()
 
 
-def tart_train(user_config_file):
+def tart_train(user_config_file: str, tune: bool = False, trials: int = 0) -> None:
+    """tart's train API
+
+    Args:
+        user_config_file (str): config file path
+        tune (bool, optional): flag to perform hyperparam tuning. Defaults to False.
+        trials (int, optional): #trials for hyperparam tuning . Defaults to None.
+    """
     print_header()
-    parser = argparse.ArgumentParser()
+    parser = set_parser(tune)
 
     # reading user config from json file
     with open(user_config_file) as f:
@@ -174,6 +189,8 @@ def tart_train(user_config_file):
     config.build_optimizer_configs(parser)
     config.build_model_configs(parser)
     config.build_feature_configs(parser)
+    if tune:
+        config.make_tunable(parser, config_json["tunable"])
 
     args = parser.parse_args()
 
@@ -187,4 +204,16 @@ def tart_train(user_config_file):
     args.n_train = args.n_batches * args.batch_size
     args.n_test = int(0.2 * args.n_train)
 
-    train_loop(args, feat_encoder)
+    if tune and trials > 0:
+        for i, trial_args in enumerate(args.trials(trials)):
+            console.print(f"\n[bright_green underline]Hyperparameter Tuning Trial #{i}[/bright_green underline]\n")
+
+            trial_args = config.init_user_configs(trial_args, config_json, tune=True)
+            trial_args.n_train = trial_args.n_batches * trial_args.batch_size
+            trial_args.n_test = int(0.2 * trial_args.n_train)
+
+            print(f"Trial args: {trial_args}")
+            train_loop(trial_args, feat_encoder)
+
+    else:
+        train_loop(args, feat_encoder)

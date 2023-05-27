@@ -1,9 +1,11 @@
+from argparse import Namespace
 from rich.console import Console
 
 console = Console()
 
 
-def print_header():
+def print_header() -> None:
+    """print tart header to console"""
     header = """ _                 _   
 | |_   __ _  _ __ | |_ 
 | __| / _` || '__|| __|
@@ -13,7 +15,12 @@ def print_header():
     console.print(f"[bright_green]{header}[/bright_green]\n")
 
 
-def summarize_tart_run(args):
+def summarize_tart_run(args: Namespace) -> None:
+    """print tart run summary to console
+
+    Args:
+        args (Namespace): tart configs
+    """
     tart = "\[tart]"
     console.print(f"\n[bright_green] ======== run summary ======== [/bright_green]")
     console.print(f"[bright_green] {tart} [/bright_green] mode {'test' if args.test else 'train'}")

@@ -1,10 +1,18 @@
+from argparse import Namespace
+from typing import Tuple, Iterator
+
 import torch
 import torch.optim as optim
 
 DEVICE_CACHE = None
 
 
-def get_device():
+def get_device() -> torch.device:
+    """get device (cpu or gpu)
+
+    Returns:
+        torch.device: available device
+    """
     # get device (cpu or gpu)
     global DEVICE_CACHE
 
@@ -18,14 +26,28 @@ def get_device():
     return DEVICE_CACHE
 
 
-def get_torch_tensor_type():
+def get_torch_tensor_type() -> torch.FloatTensor or torch.cuda.FloatTensor:
+    """get torch tensor type (cpu or gpu)
+
+    Returns:
+        torch.dtype: correct torch tensor type
+    """
     if torch.cuda.is_available():
         return torch.cuda.FloatTensor
     else:
         return torch.FloatTensor
 
 
-def build_model(model_type, args):
+def build_model(model_type: torch.nn.Module, args: Namespace) -> torch.nn.Module:
+    """build the user specified model
+
+    Args:
+        model_type (torch.nn.Module): model class
+        args (Namespace): user defined configs
+
+    Returns:
+        torch.nn.Module: built model
+    """
     # build model
     model = model_type(1, args.hidden_dim, args)
     model.to(get_device())
@@ -36,7 +58,16 @@ def build_model(model_type, args):
     return model
 
 
-def build_optimizer(args, params):
+def build_optimizer(args: Namespace, params: Iterator) -> Tuple:
+    """build optimizer and scheduler
+
+    Args:
+        args (Namespace): user defined configs
+        params (Iterator): model parameters
+
+    Returns:
+        Tuple[optim.lr_scheduler.LRScheduler, optim.Optimizer]: _description_
+    """
     # build optimizer
     weight_decay = args.weight_decay
     filter_fn = filter(lambda p: p.requires_grad, params)

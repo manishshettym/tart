@@ -2,12 +2,14 @@ import os
 import glob
 import json
 import os.path as osp
+from argparse import Namespace
+from typing import Callable, List
 from rich.progress import track, Progress, TextColumn, SpinnerColumn
 from rich.console import Console
 
-import ast
 import networkx as nx
 import torch
+import torch.nn as nn
 import argparse
 from deepsnap.batch import Batch
 import torch.multiprocessing as mp
@@ -22,7 +24,17 @@ console = Console()
 # ########## MULTI PROC ##########
 
 
-def start_workers_process(in_queue, out_queue, args):
+def start_workers_process(in_queue: mp.Queue, out_queue: mp.Queue, args: Namespace) -> List[mp.Process]:
+    """Starts worker processes for generating neighborhoods
+
+    Args:
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
+        args (Namespace): tart configs
+
+    Returns:
+        List[mp.Process]: list of worker processes
+    """
     workers = []
     with Progress(
         SpinnerColumn(),
@@ -39,7 +51,18 @@ def start_workers_process(in_queue, out_queue, args):
     return workers
 
 
-def start_workers_embed(model, in_queue, out_queue, args):
+def start_workers_embed(model: nn.Module, in_queue: mp.Queue, out_queue: mp.Queue, args: Namespace) -> List[mp.Process]:
+    """Starts worker processes for generating embeddings
+
+    Args:
+        model (nn.Module): tart model to embed graphs
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
+        args (Namespace): tart configs
+
+    Returns:
+        List[mp.Process]: list of worker processes
+    """
     workers = []
     with Progress(
         SpinnerColumn(),
@@ -59,8 +82,17 @@ def start_workers_embed(model, in_queue, out_queue, args):
 # ########## UTILITIES ##########
 
 
-# returns a featurized (sampled) radial neighborhood for all nodes in the graph
-def get_neighborhoods(args, graph, feat_encoder):
+def get_neighborhoods(args: Namespace, graph: nx.Graph, feat_encoder: Callable) -> List:
+    """Returns a featurized (sampled) radial neighborhood for all nodes in a graph
+
+    Args:
+        args (Namespace): tart configs
+        graph (nx.Graph): graph to find neighborhoods for
+        feat_encoder (Callable): feature encoder for graph nodes
+
+    Returns:
+        List: list of featurized neighborhoods
+    """
     neighs = []
 
     # find each node's neighbors via SSSP
@@ -89,7 +121,16 @@ def get_neighborhoods(args, graph, feat_encoder):
 # ########## PIPELINE FUNCTIONS ##########
 
 
-def generate_embeddings(args, model, in_queue, out_queue):
+def generate_embeddings(args: Namespace, model: nn.Module, in_queue: mp.Queue, out_queue: mp.Queue):
+    """Generates embeddings for each node in the graph.
+    NOTE: This function is called by each worker process.
+
+    Args:
+        arg (Namespace): tart configs
+        model (nn.Module): tart model to generate embeddings
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
+    """
     done = False
     while not done:
         msg, idx = in_queue.get()
@@ -112,7 +153,15 @@ def generate_embeddings(args, model, in_queue, out_queue):
         out_queue.put(("complete"))
 
 
-def generate_neighborhoods(args, in_queue, out_queue):
+def generate_neighborhoods(args: Namespace, in_queue: mp.Queue, out_queue: mp.Queue):
+    """Generates neighborhoods for each node in the graph.
+    NOTE: This function is called by each worker process.
+
+    Args:
+        args (Namespace): tart configs
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
+    """
     done = False
     feat_encoder = get_feature_encoder(args.feat_encoder)
 
@@ -146,7 +195,12 @@ def generate_neighborhoods(args, in_queue, out_queue):
 # ########## MAIN ##########
 
 
-def embed_main(args):
+def embed_main(args: Namespace):
+    """Pipeline to generate embeddings for a dataset of graphs
+
+    Args:
+        args (Namespace): tart configs
+    """
     assert osp.exists(osp.dirname(args.raw_dir)), "raw_dir does not exist!"
 
     if not osp.exists(args.graph_dir):
@@ -208,7 +262,12 @@ def embed_main(args):
         worker.join()
 
 
-def tart_embed(user_config_file):
+def tart_embed(user_config_file: str):
+    """tart's embed API
+
+    Args:
+        user_config_file (str): config file path
+    """
     console.print("[bright_green underline]Embedding Search Space[/ bright_green underline]\n")
     parser = argparse.ArgumentParser()
 

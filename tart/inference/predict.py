@@ -4,11 +4,14 @@ import os.path as osp
 import json
 import glob
 import argparse
+from argparse import Namespace
+from typing import List, Tuple, Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import numpy as np
 import torch
+import torch.nn as nn
 from deepsnap.batch import Batch
 
 from tart.representation.encoders import get_feature_encoder
@@ -22,7 +25,17 @@ from tart.utils.tart_utils import print_header
 console = Console()
 
 
-def search_space_sample(src_dir: str, k=None, seed=24):
+def search_space_sample(src_dir: str, k: Optional[int] = None, seed: int = 24) -> Tuple[List[str], List[str]]:
+    """sample k graphs from search space
+
+    Args:
+        src_dir (str): directory containing search space graphs
+        k (int, optional): number of graphs to sample. Defaults to None.
+        seed (int, optional): random seed. Defaults to 24.
+
+    Returns:
+        Tuple[List[str], List[str]]: list of sampled files and their indices
+    """
     np.random.seed(seed)
     files = [f for f in sorted(glob.glob(osp.join(src_dir, "*.pt")))]
     if k is None:
@@ -33,14 +46,31 @@ def search_space_sample(src_dir: str, k=None, seed=24):
     return random_files, random_index
 
 
-def read_embedding(args, idx):
+def read_embedding(args: Namespace, idx: str) -> torch.Tensor:
+    """read embedding of a graph from disk
+
+    Args:
+        args (Namespace): tart configs
+        idx (str): index of graph
+
+    Returns:
+        torch.Tensor: embedding of graph
+    """
     emb_path = f"emb_{idx}.pt"
     emb_path = osp.join(args.emb_dir, emb_path)
     return torch.load(emb_path, map_location=torch.device("cpu"))
 
 
-def load_search_space(args, file_indices):
-    """load embeddings of search space graphs into a list of batches"""
+def load_search_space(args: Namespace, file_indices: List[str]) -> List[torch.Tensor]:
+    """load embeddings of search space graphs into a list of batches
+
+    Args:
+        args (Namespace): tart configs
+        file_indices (List[str]): list of indices of search space graphs
+
+    Returns:
+        List[torch.Tensor]: list of batched embeddings
+    """
     embs, batch_embs = [], []
     count = 0
 
@@ -62,14 +92,17 @@ def load_search_space(args, file_indices):
     return embs
 
 
-def predict_neighs_batched(model, search_embs, query_emb):
+def predict_neighs_batched(model: nn.Module, search_embs: List[torch.Tensor], query_emb: torch.Tensor) -> int:
     """(batched) predict number of neighborhoods in which
     query graph (query_emb) is subgraph of search graphs (embs)
 
     Args:
-        model (tart.representation.models.TART): trained TART model
-        search_embs (list): list of embeddings of search graphs
+        model (nn.Module): tart model
+        search_embs (List[torch.Tensor]): list of batched embeddings of search space graphs
         query_emb (torch.Tensor): embedding of query graph
+
+    Returns:
+        int: score = number of neighborhoods in which query graph is subgraph of search graphs
     """
     score = 0
 
@@ -89,21 +122,20 @@ def predict_neighs_batched(model, search_embs, query_emb):
 
 
 def tart_predict(
-    user_config_file,
-    query_json,
-    search_space_path,
-    search_sample=None,
-    outcome="count_subgraphs",
+    user_config_file: str,
+    query_json: str,
+    search_space_path: str,
+    search_sample: Optional[int] = None,
+    outcome: str = "count_subgraphs",
 ):
     """predict API for tart
 
     Args:
-        user_config_file (_type_): json file containing user defined configs
-        query_json (_type_): json file containing query graph
-        search_space_path (_type_): path to either
-            (1) a directory containing embeddings of search space
-            (2) a single json file containing a search graph
-        outcome (str, optional): prediction task = {count_subgraphs, is_subgraph}. Defaults to "count_subgraphs".
+        user_config_file (str): config file path
+        query_json (str): path to query graph json file
+        search_space_path (str): path to search space directory
+        search_sample (Optional[int], optional): number of graphs to sample from search space. Defaults to None.
+        outcome (str, optional): prediction outcome = {"count_subgraphs", "is_subgraph"}. Defaults to "count_subgraphs".
     """
     print_header()
     console.print("[bright_green underline]Prediction API[/ bright_green underline]\n")

@@ -18,6 +18,7 @@ openpyxl = "^3.1.2"
 pycodestyle = "^2.10.0"
 rich = "^13.3.5"
 tensorboard = "^2.12.2"
+test-tube = "^0.7.5"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.0.0"

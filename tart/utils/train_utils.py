@@ -1,11 +1,35 @@
+import argparse
+from typing import List, Tuple, Callable
+from argparse import Namespace
 from rich.progress import track, Progress, TextColumn, SpinnerColumn
 
+import torch
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
+from test_tube import HyperOptArgumentParser
+
+from tart.representation.dataset import Corpus
 
 
-def init_logger(args):
+def set_parser(tune):
+    if tune:
+        parser = HyperOptArgumentParser(strategy="grid_search")
+    else:
+        parser = argparse.ArgumentParser()
+    return parser
+
+
+def init_logger(args: Namespace) -> SummaryWriter:
+    """Initialize tensorboard logger
+
+    Args:
+        args (Namespace): tart configs
+
+    Returns:
+        SummaryWriter: tensorboard logger
+    """
     log_keys = [
         "conv_type",
         "n_layers",
@@ -19,7 +43,27 @@ def init_logger(args):
     return SummaryWriter(comment=log_str)
 
 
-def start_workers(train_func, model, corpus, in_queue, out_queue, args):
+def start_workers(
+    train_func: Callable,
+    model: torch.nn.Module,
+    corpus: Corpus,
+    in_queue: mp.Queue,
+    out_queue: mp.Queue,
+    args: Namespace,
+) -> List[mp.Process]:
+    """Start workers for training
+
+    Args:
+        train_func (Callable): train function
+        model (torch.nn.Module): tart model to train
+        corpus (Corpus): dataset to train the model on
+        in_queue (mp.Queue): mp queue for input
+        out_queue (mp.Queue): mp queue for output
+        args (Namespace): tart configs
+
+    Returns:
+        List[mp.Process]: list of workers
+    """
     workers = []
     with Progress(
         SpinnerColumn(),
@@ -36,7 +80,18 @@ def start_workers(train_func, model, corpus, in_queue, out_queue, args):
     return workers
 
 
-def make_validation_set(dataloader):
+def make_validation_set(
+    dataloader: DataLoader,
+) -> List[Tuple[Batch, Batch, Batch, Batch]]:
+    """Make validation set from dataloader
+
+    Args:
+        dataloader (DataLoader): dataloader for validation set
+
+    Returns:
+        List[Tuple[Batch, Batch, Batch, Batch]]:
+            list of validation batches, each batch is a tuple of (pos_q, pos_t, neg_q, neg_t)
+    """
     test_pts = []
 
     for batch in track(dataloader, total=len(dataloader), description="TestBatches"):
