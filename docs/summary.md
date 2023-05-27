@@ -37,4 +37,4 @@ graph relation -- the subgraph relation (⊆). tart learns tensor representation
 <!-- tart is used by:
 1. CodeScholar: exploring code idiom search as frequent subgraph mining.
 2. tartSAT: capturing common UNSAT cores as frequent subgraphs in formulae.
-3. egg-tart: exploring common subgraphs in e-graphs. -->
+3. ... -->
