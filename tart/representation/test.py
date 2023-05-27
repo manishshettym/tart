@@ -1,11 +1,15 @@
 import os
 import json
 import argparse
-import inspect
+from argparse import Namespace
+from typing import List
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import torch
+import torch.nn as nn
+from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score, confusion_matrix
 from sklearn.metrics import average_precision_score
 from deepsnap.batch import Batch
@@ -18,21 +22,45 @@ from tart.utils.config_utils import validate_feat_encoder
 console = Console()
 
 
-def precision(pred, labels):
+def precision(pred: torch.Tensor, labels: torch.Tensor) -> float:
+    """Calculate precision for predictions.
+
+    Args:
+        pred (torch.Tensor): tensor of predicted labels
+        labels (torch.Tensor): tensor of true labels
+
+    Returns:
+        float: average precision
+    """
     if torch.sum(pred) > 0:
         return torch.sum(pred * labels).item() / torch.sum(pred).item()
     else:
         return float("NaN")
 
 
-def recall(pred, labels):
+def recall(pred: torch.Tensor, labels: torch.Tensor) -> float:
+    """Calculate recall for predictions.
+
+    Args:
+        pred (torch.Tensor): tensor of predicted labels
+        labels (torch.Tensor): tensor of true labels
+
+    Returns:
+        float: average recall
+    """
     if torch.sum(labels) > 0:
         return torch.sum(pred * labels).item() / torch.sum(labels).item()
     else:
         return float("NaN")
 
 
-def test(model, dataloader):
+def test(model: nn.Module, dataloader: DataLoader):
+    """Test the model on a corpus of graphs loaded by a dataloader.
+
+    Args:
+        model (nn.Module): tart model to test
+        dataloader (DataLoader): dataloader for test data
+    """
     model.eval()
     all_raw_preds, all_preds, all_labels = [], [], []
 
@@ -103,7 +131,17 @@ def test(model, dataloader):
     )
 
 
-def validation(args, model, test_pts, logger, batch_n, epoch):
+def validation(args: Namespace, model: nn.Module, test_pts: List, logger: SummaryWriter, batch_n: int, epoch: int):
+    """validate the model on the validation set
+
+    Args:
+        args (Namespace): tart configs
+        model (nn.Module): tart model
+        test_pts (List): validation set
+        logger (SummaryWriter): tensorboard logger
+        batch_n (int): batch number
+        epoch (int): epoch number
+    """
     model.eval()
     all_raw_preds, all_preds, all_labels = [], [], []
 

@@ -35,7 +35,7 @@ class Corpus:
     def __init__(self, args: Namespace, feat_encoder: Callable, train: bool = True):
         """Initialize the corpus generator
 
-        note: new batch of graphs (positive and negative)
+        NOTE: new batch of graphs (positive and negative)
         are iteratively generated on the fly by sampling from the dataset.
 
         Args:

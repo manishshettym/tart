@@ -1,5 +1,7 @@
 import os
 import json
+from argparse import Namespace
+from typing import Callable
 from rich.console import Console
 
 import torch
@@ -8,7 +10,7 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 from deepsnap.batch import Batch
 
-
+from tart.representation.dataset import Corpus
 from tart.representation.encoders import get_feature_encoder
 from tart.representation.test import validation
 from tart.representation import config, models, dataset
@@ -21,16 +23,16 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 console = Console()
 
 
-def train(args, model, corpus, in_queue, out_queue):
-    """
-    Train the model that was initialized
+def train(args: Namespace, model: nn.Module, corpus: Corpus, in_queue: mp.Queue, out_queue: mp.Queue):
+    """Train a single iteration for the model on a corpus of graphs.
+    NOTE: This function is called by each worker process.
 
     Args:
-        args: Commandline arguments
-        model: GNN model
-        corpus: dataset to train the GNN model
-        in_queue: input queue to an intersection computation worker
-        out_queue: output queue to an intersection computation worker
+        args (Namespace): tart configs
+        model (nn.Module): tart model to train
+        corpus (Corpus): corpus generator for graphs
+        in_queue (mp.Queue): multiprocessing queue for input
+        out_queue (mp.Queue): multiprocessing queue for output
     """
     scheduler, opt = build_optimizer(args, model.parameters())
     clf_opt = optim.Adam(model.classifier.parameters(), lr=args.lr)
@@ -99,7 +101,14 @@ def train(args, model, corpus, in_queue, out_queue):
             out_queue.put(("step", (train_loss, train_acc)))
 
 
-def train_loop(args, feat_encoder):
+def train_loop(args: Namespace, feat_encoder: Callable):
+    """train the model for a number of iterations
+    by spinning up a number of workers.
+
+    Args:
+        args (Namespace): tart configs
+        feat_encoder (Callable): encoder function that converts string to torch.tensor
+    """
     if not os.path.exists(os.path.dirname(args.model_path)):
         os.makedirs(os.path.dirname(args.model_path))
     if not os.path.exists("plots/"):

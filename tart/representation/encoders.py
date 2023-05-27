@@ -11,7 +11,14 @@ model = None
 
 
 def codebert_encoder(x: str) -> torch.tensor:
-    """feature encoder using CodeBert model"""
+    """feature encoder using CodeBert model
+
+    Args:
+        x (str): string to be encoded
+
+    Returns:
+        torch.tensor: encoding of the string
+    """
     global tokenizer, model
 
     tokens_ids = tokenizer.encode(x, truncation=True)
@@ -26,7 +33,14 @@ def codebert_encoder(x: str) -> torch.tensor:
 
 
 def codebert_bpe_encoder(x: str) -> torch.tensor:
-    """feature encoder using CodeBert BPE tokenizer"""
+    """feature encoder using CodeBert BPE tokenizer
+
+    Args:
+        x (str): string to be encoded
+
+    Returns:
+        torch.tensor: encoding of the string
+    """
     global tokenizer, max_len
 
     encoded_input = tokenizer(
@@ -49,7 +63,14 @@ ENCODER_STRATEGY = {
 
 
 def get_feature_encoder(encoder_name: str, **kwargs) -> Callable[[str], torch.tensor]:
-    """returns a feature encoder based on the encoder_name"""
+    """Factory function to get a feature encoder
+
+    Args:
+        encoder_name (str): name of the encoder to retrieve
+
+    Returns:
+        Callable[[str], torch.tensor]: callable feature encoder
+    """
     global tokenizer, model, max_len
 
     if encoder_name == "CodeBert":
