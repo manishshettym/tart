@@ -10,7 +10,7 @@ build:
   tools:
       python: "3.9"
   jobs:
-      post_system_dependencies:
+      post_install:
       - sh setup.sh
 
 # Build documentation in the docs/ directory with Sphinx
