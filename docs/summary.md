@@ -1,8 +1,7 @@
 **🔥 tensor abstractions for fast analysis of graph relations 🔥**
 
 ```shell
-pip install tart
-tart init
+pip install tart-lib
 ```
 
 tart is a library for learning approximate and abstract relations between graphs. It is currently designed for a very general
