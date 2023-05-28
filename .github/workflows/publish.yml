@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 - --version 1.4.0
       - name: Cache Poetry virtualenv
@@ -48,10 +48,10 @@ jobs:
     needs: publish-test-pypi
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 - --version 1.4.0
       - name: Cache Poetry virtualenv
@@ -72,7 +72,7 @@ jobs:
           poetry install
           poetry run sh setup.sh
           poetry run pip install -r requirements-dev.txt
-      - name: Build package under skyplane name
+      - name: Build package under tart-lib name
         run: |
           export TARTVERSION=`poetry version | awk 'END {print $NF}'`
           poetry build
