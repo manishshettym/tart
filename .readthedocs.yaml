@@ -11,10 +11,10 @@ build:
       python: "3.9"
   jobs:
       post_install:
-      - python -m pip install --upgrade --no-cache-dir install torch
-      - python -m pip install --upgrade --no-cache-dir install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-      - python -m pip install --upgrade --no-cache-dir install deepsnap
-      - python -m pip install --upgrade --no-cache-dir install transformers
+      - python -m pip install --upgrade --no-cache-dir torch
+      - python -m pip install --upgrade --no-cache-dir torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+      - python -m pip install --upgrade --no-cache-dir deepsnap
+      - python -m pip install --upgrade --no-cache-dir transformers
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
