@@ -11,11 +11,11 @@ build:
       python: "3.9"
   jobs:
       post_install:
-      - python -m pip install --upgrade --no-cache-dir torch
-      - python -m pip install --upgrade --no-cache-dir torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-      - python -m pip install --upgrade --no-cache-dir torch_geometric
-      - python -m pip install --upgrade --no-cache-dir deepsnap
-      - python -m pip install --upgrade --no-cache-dir transformers
+      - python -m pip install --upgrade --no-cache-dir --exists-action=w https://download.pytorch.org/whl/cpu/torch-1.13.0%2Bcpu-cp39-cp39-linux_x86_64.whl
+      - python -m pip install --upgrade --no-cache-dir --exists-action=w torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+      - python -m pip install --upgrade --no-cache-dir --exists-action=w torch_geometric
+      - python -m pip install --upgrade --no-cache-dir --exists-action=w deepsnap
+      - python -m pip install --upgrade --no-cache-dir --exists-action=w transformers
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
