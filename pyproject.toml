@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "tart-lib"
 packages = [{ include = "tart" }]
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["manishshettym <manishs@berkeley.edu>"]
 readme = "README.md"
