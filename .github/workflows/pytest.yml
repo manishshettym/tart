@@ -21,6 +21,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
         if: steps.cache.outputs.cache-hit != 'true'
       - name: black
@@ -45,12 +46,10 @@ jobs:
           poetry config virtualenvs.path ~/.virtualenvs
       - name: Install Dependencies
         run: |
-          poetry run pip cache purge
           poetry install
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
-          poetry run tart init
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Run unit tests
         run: |
-          poetry run pip freeze
           poetry run pytest -s tests
