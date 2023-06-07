@@ -20,6 +20,7 @@ pycodestyle = "^2.10.0"
 rich = "^13.3.5"
 tensorboard = "^2.12.2"
 test-tube = "^0.7.5"
+typer = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.0.0"
@@ -30,3 +31,6 @@ black = "^23.1.0"
 [build-system]
 requires = ["setuptools", "poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+tart = "tart.cli.cli:app"
