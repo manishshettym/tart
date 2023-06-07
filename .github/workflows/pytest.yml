@@ -22,7 +22,6 @@ jobs:
         run: |
           poetry install
           poetry run pip install -r requirements-dev.txt
-          poetry run tart init
         if: steps.cache.outputs.cache-hit != 'true'
       - name: black
         run: poetry run black . --check --line-length=140
@@ -48,8 +47,8 @@ jobs:
         run: |
           poetry install
           poetry run pip install -r requirements-dev.txt
-          poetry run tart init
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Run unit tests
         run: |
+          poetry run tart init
           poetry run pytest -s tests
