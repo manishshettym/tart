@@ -45,11 +45,12 @@ jobs:
           poetry config virtualenvs.path ~/.virtualenvs
       - name: Install Dependencies
         run: |
+          poetry run pip cache purge
           poetry install
           poetry run pip install -r requirements-dev.txt
+          poetry run tart init
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Run unit tests
         run: |
           poetry run pip freeze
-          poetry run tart init
           poetry run pytest -s tests
