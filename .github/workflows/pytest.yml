@@ -18,6 +18,7 @@ jobs:
         run: |
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.path ~/.virtualenvs
+          poetry config virtualenvs.create false
       - name: Install Dependencies
         run: |
           poetry install
@@ -43,6 +44,7 @@ jobs:
         run: |
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.path ~/.virtualenvs
+          poetry config virtualenvs.create false
       - name: Install Dependencies
         run: |
           poetry install
