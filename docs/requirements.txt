@@ -8,4 +8,3 @@ sphinx-click
 sphinx-copybutton
 sphinx>=4.4,!=5.1
 sphinxext.opengraph
-..
