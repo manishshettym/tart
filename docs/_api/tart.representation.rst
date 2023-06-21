@@ -17,6 +17,22 @@ tart.representation.dataset module
    :undoc-members:
    :show-inheritance:
 
+tart.representation.train module
+--------------------------------
+
+.. automodule:: tart.representation.train
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tart.representation.test module
+-------------------------------
+
+.. automodule:: tart.representation.test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 tart.representation.encoders module
 -----------------------------------
 
@@ -30,24 +46,7 @@ tart.representation.models module
 
 .. automodule:: tart.representation.models
    :members:
-   :undoc-members:
-   :show-inheritance:
-
-tart.representation.test module
--------------------------------
-
-.. automodule:: tart.representation.test
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-tart.representation.train module
---------------------------------
-
-.. automodule:: tart.representation.train
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :exclude-members: Preprocess
 
 Module contents
 ---------------

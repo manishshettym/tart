@@ -1,16 +1,13 @@
 Learning using tart
 ====================================
 
-.. note::
-    coming soon!!
-
 This tutorial explains how to train a ``tart`` model that can perform
 subgraph matching and prediction on a graph dataset.
 
 Step 1: Creating a dataset
 --------------------------
 
-Let's first organize your dataset. Each sample in the dataset is a graph.
+Let's first organize our dataset. Each sample in the dataset is a graph.
 `tart` expects all graphs to be in a JSON format, as follows:
 
 .. code-block:: json
@@ -84,7 +81,7 @@ at
 and `optimizer-configs <https://tart.readthedocs.io/en/latest/_modules/tart/representation/config.html#build_optimizer_configs>`_.
 
 Step 3: Learn a tart model
-------------------------
+----------------------------
 
 Write a super simple script using tart's APIs to train your model. Here's an example:
 
