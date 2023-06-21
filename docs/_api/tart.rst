@@ -1,5 +1,5 @@
 API Documentation
-============
+=================
 
 APIs
 -----------
@@ -7,8 +7,8 @@ APIs
 .. toctree::
    :maxdepth: 4
 
-   tart.inference
    tart.representation
+   tart.inference
    tart.utils
 
 Module contents

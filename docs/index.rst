@@ -17,9 +17,7 @@ Contents
    :caption: Overview
 
    installation
-   quickstart
    architecture
-   faq
 
 .. toctree::
    :maxdepth: 2

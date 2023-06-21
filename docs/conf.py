@@ -8,7 +8,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../tart"))
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information
@@ -18,7 +18,7 @@ copyright = "2021, The tart authors"
 author = "The tart authors"
 
 release = "0.1"
-version = "0.1.0"
+version = "0.1.1"
 
 # -- General configuration
 

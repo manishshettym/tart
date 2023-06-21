@@ -21,7 +21,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install
-          poetry run sh setup.sh
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
         if: steps.cache.outputs.cache-hit != 'true'
       - name: black
@@ -47,7 +47,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install
-          poetry run sh setup.sh
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Run unit tests
