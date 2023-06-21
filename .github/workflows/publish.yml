@@ -32,7 +32,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install
-          poetry run sh setup.sh
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
       - name: Build package
         run: |
@@ -70,7 +70,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install
-          poetry run sh setup.sh
+          poetry run sh tart-gh.sh
           poetry run pip install -r requirements-dev.txt
       - name: Build package under tart-lib name
         run: |
